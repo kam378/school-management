@@ -1,0 +1,244 @@
+{% load static %}
+{% load core_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Promotion - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .accordion-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+        .accordion-header {
+            padding: 15px 20px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .accordion-header:hover {
+            background: var(--bg-color);
+        }
+        .accordion-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+        .accordion-content.active {
+            display: block;
+        }
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .student-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>Year-End Student Promotion</h1>
+                <p class="date">Promote students to the next grade level for the upcoming academic year.</p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card" style="padding: 20px;">
+            <h3>Instructions</h3>
+            <ol style="margin-left: 20px; color: var(--text-muted); font-size: 0.9rem;">
+                <li>Expand a Grade Level below to see enrolled students.</li>
+                <li>Select the students you wish to promote (default: all).</li>
+                <li>Choose the <strong>Target Grade Level</strong> and <strong>Target Classroom</strong>.</li>
+                <li>Click <strong>Promote Selected Students</strong> to move them.</li>
+            </ol>
+            <p style="font-size: 0.9rem; color: #e74c3c; margin-top: 10px;">
+                <i class="fa fa-exclamation-triangle"></i> <strong>Note:</strong> Students will be immediately moved to the new classroom and grade.
+            </p>
+        </div>
+
+        <!-- Ungraded Students Section -->
+        {% if ungraded_students %}
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('ungraded')">
+                <span><i class="fa fa-user-plus" style="margin-right: 10px; color: #e67e22;"></i> Newly Registered / Ungraded Students</span>
+                <span class="badge">{{ ungraded_students.count }}</span>
+            </div>
+            <div id="accordion-ungraded" class="accordion-content active">
+                <form method="POST" action="{% url 'admin_promote_execute' %}">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label class="form-label">Promote To Grade Level</label>
+                            <select name="target_grade" class="form-control target-grade-select" required onchange="handleGradeChange(this)">
+                                <option value="">Select Grade Level...</option>
+                                <option value="graduate" style="color: #c0392b; font-weight: bold;">🎓 Graduate / Archive</option>
+                                {% for level in grade_levels %}
+                                <option value="{{ level.id }}">{{ level.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Assign To Classroom</label>
+                            <select name="target_classroom" class="form-control target-classroom-select" required>
+                                <option value="">Select Classroom...</option>
+                                {% for room in classrooms %}
+                                <option value="{{ room.id }}">{{ room.name }} ({{ room.level.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <input type="checkbox" id="select-all-ungraded" checked onchange="toggleSelectAll('ungraded', this.checked)">
+                        <label for="select-all-ungraded">Select All</label>
+                    </div>
+
+                    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        {% for profile in ungraded_students %}
+                        <div class="student-item">
+                            <input type="checkbox" name="selected_students" value="{{ profile.id }}" class="student-checkbox-ungraded" checked>
+                            <div style="margin-left: 10px;">
+                                <div style="font-weight: 600;">{{ profile.student.get_full_name }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ profile.student.custom_id }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn-submit">Initialize Students</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Existing Grade Levels -->
+        {% for grade, profiles in students_by_grade.items %}
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('grade-{{ grade.id }}')">
+                <span><i class="fa fa-graduation-cap" style="margin-right: 10px; color: var(--primary-color);"></i> {{ grade.name }}</span>
+                <span class="badge">{{ profiles.count }}</span>
+            </div>
+            <div id="accordion-grade-{{ grade.id }}" class="accordion-content">
+                <form method="POST" action="{% url 'admin_promote_execute' %}">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label class="form-label">Promote To Grade Level</label>
+                            <select name="target_grade" class="form-control target-grade-select" required onchange="handleGradeChange(this)">
+                                <option value="">Select Grade Level...</option>
+                                <option value="graduate" style="color: #c0392b; font-weight: bold;">🎓 Graduate / Archive</option>
+                                {% for level in grade_levels %}
+                                <option value="{{ level.id }}">{{ level.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Assign To Classroom</label>
+                            <select name="target_classroom" class="form-control target-classroom-select" required>
+                                <option value="">Select Classroom...</option>
+                                {% for room in classrooms %}
+                                <option value="{{ room.id }}">{{ room.name }} ({{ room.level.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <input type="checkbox" id="select-all-{{ grade.id }}" checked onchange="toggleSelectAll('{{ grade.id }}', this.checked)">
+                        <label for="select-all-{{ grade.id }}">Select All</label>
+                    </div>
+
+                    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        {% for profile in profiles %}
+                        <div class="student-item">
+                            <input type="checkbox" name="selected_students" value="{{ profile.id }}" class="student-checkbox-{{ grade.id }}" checked>
+                            <div style="margin-left: 10px;">
+                                <div style="font-weight: 600;">{{ profile.student.get_full_name }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                    {{ profile.student.custom_id }} 
+                                    {% if profile.classroom %}
+                                    <span style="margin-left: 10px; background: var(--bg-color); padding: 2px 6px; border-radius: 4px;">{{ profile.classroom.name }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn-submit">Promote Selected Students</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+
+    </main>
+
+    <script>
+        function toggleAccordion(id) {
+            const content = document.getElementById('accordion-' + id);
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+            } else {
+                // Close others
+                document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('active'));
+                content.classList.add('active');
+            }
+        }
+
+        function toggleSelectAll(groupId, checked) {
+            document.querySelectorAll('.student-checkbox-' + groupId).forEach(box => {
+                box.checked = checked;
+            });
+        }
+        
+        function handleGradeChange(selectElement) {
+            // Find the sibling classroom select within the same form
+            const form = selectElement.closest('form');
+            const classroomSelect = form.querySelector('.target-classroom-select');
+            
+            if (selectElement.value === 'graduate') {
+                classroomSelect.value = "";
+                classroomSelect.removeAttribute('required');
+                classroomSelect.setAttribute('disabled', 'disabled');
+                classroomSelect.style.opacity = '0.5';
+                classroomSelect.style.cursor = 'not-allowed';
+            } else {
+                classroomSelect.setAttribute('required', 'required');
+                classroomSelect.removeAttribute('disabled');
+                classroomSelect.style.opacity = '1';
+                classroomSelect.style.cursor = 'default';
+            }
+        }
+    </script>
+</body>
+</html>

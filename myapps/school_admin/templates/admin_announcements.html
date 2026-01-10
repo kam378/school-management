@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .announcement-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .announcement-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border-left: 5px solid var(--primary-color);
+            transition: 0.2s;
+        }
+        .announcement-card:hover { transform: translateX(5px); box-shadow: 0 6px 15px var(--shadow-color); }
+        .a-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .a-title { margin: 0; font-size: 1.2rem; color: var(--text-color); }
+        .a-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .a-body { color: var(--text-color); line-height: 1.6; margin-bottom: 20px; }
+        .a-actions a {
+            color: var(--text-muted);
+            margin-left: 15px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .a-actions a:hover { color: var(--primary-color); }
+        .a-actions .delete:hover { color: #dc3545; }
+        
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-add:hover { background: #357abd; }
+    </style>
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Announcements</h1>
+                    <p class="date">Broadcast updates to your school.</p>
+                </div>
+            </div>
+            <a href="{% url 'school_admin_add_announcements' %}" class="btn-add">
+                <i class="fa fa-plus"></i> Post Announcement
+            </a>
+        </div>
+
+        <div class="announcement-list">
+            {% for announcement in announcements %}
+            <div class="announcement-card">
+                <div class="a-header">
+                    <h3 class="a-title">{{ announcement.title }}</h3>
+                    <!-- Options dropdown could go here -->
+                </div>
+                <div class="a-meta">
+                    <span><i class="fa fa-calendar-alt"></i> {{ announcement.date|date:"M d, Y" }}</span>
+                    <span><i class="fa fa-user"></i> {{ announcement.author }}</span>
+                </div>
+                <div class="a-body">
+                    {{ announcement.body|truncatechars:200 }}
+                </div>
+                <div class="a-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <a href="{% url 'school_admin_single_announcement' announcement.id announcement.title %}" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">Read More &rarr;</a>
+                    <div class="a-actions">
+                        <a href="admin_edit_announcements.html" title="Edit"><i class="fa fa-pen"></i></a> <!-- TODO: Update URL when available -->
+                        <a href="{% url 'school_admin_delete_anouncement' announcement.id %}" class="delete" onclick="return confirm('WARNING: Are you sure you want to delete this announcement?') " title="Delete"><i class="fa fa-trash-can"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 50px; background: var(--card-bg); border-radius: 12px; color: var(--text-muted);">
+                <i class="fa fa-bullhorn" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>No announcements yet.</p>
+                <a href="{% url 'school_admin_add_announcements' %}" style="color: var(--primary-color);">Create your first post</a>
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Details - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                   <a href="student_assignments.html" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                       <i class="fa fa-arrow-left"></i> Back to Assignments
+                   </a>
+                   <h1 style="font-size: 1.5rem; margin: 0;">Assignment Details</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                <div>
+                    <h1 class="detail-title">Algebra Homework</h1>
+                    <div class="detail-meta">
+                        <span><i class="fa fa-book"></i> Mathematics</span>
+                        <span><i class="fa fa-user"></i> Mr. Johnson</span>
+                        <span><i class="fa fa-calendar"></i> Due: June 20, 2023</span>
+                    </div>
+                </div>
+                <span style="background: #ffebee; color: #c62828; padding: 8px 16px; border-radius: 12px; font-weight: 500;">Pending</span>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: var(--text-color); margin-bottom: 10px;">Description</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">
+                    Complete exercises 1-20 from Chapter 5 of your textbook. Show all your work and explain your reasoning for each problem. 
+                    This assignment will help you prepare for the upcoming test on quadratic equations.
+                </p>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: var(--text-color); margin-bottom: 10px;">Instructions</h3>
+                <ul style="color: var(--text-muted); line-height: 1.8;">
+                    <li>Write all answers on separate paper</li>
+                    <li>Show your work for full credit</li>
+                    <li>Submit before the due date</li>
+                    <li>Use proper mathematical notation</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <h3 style="color: var(--text-color); margin-bottom: 15px;">Submit Assignment</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn-module" style="background: var(--primary-color); color: white; border: none; cursor: pointer;">
+                        <i class="fa fa-upload"></i> Upload File
+                    </button>
+                    <button class="btn-module" style="background: var(--bg-color); color: var(--text-color); border: none; cursor: pointer;">
+                        <i class="fa fa-link"></i> Add Link
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

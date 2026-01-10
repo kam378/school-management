@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .announcement-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .announcement-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border-left: 5px solid var(--primary-color);
+            transition: 0.2s;
+        }
+        .announcement-card:hover { transform: translateX(5px); box-shadow: 0 6px 15px var(--shadow-color); }
+        .a-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .a-title { margin: 0; font-size: 1.2rem; color: var(--text-color); }
+        .a-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .a-body { color: var(--text-color); line-height: 1.6; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Announcements</h1>
+                    <p class="date">Stay updated with school news.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="announcement-list">
+            {% for announcement in announcements %}
+            <div class="announcement-card">
+                <div class="a-header">
+                    <h3 class="a-title">{{ announcement.title }}</h3>
+                </div>
+                <div class="a-meta">
+                    <span><i class="fa fa-calendar-alt"></i> {{ announcement.date|date:"M d, Y" }}</span>
+                    <span><i class="fa fa-user"></i> {{ announcement.author }}</span>
+                </div>
+                <div class="a-body">
+                    {{ announcement.body|truncatechars:200 }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <a href="{% url 'student_single_annoucement' announcement.id announcement.title %}" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">Read More &rarr;</a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 50px; background: var(--card-bg); border-radius: 12px; color: var(--text-muted);">
+                <i class="fa fa-bullhorn" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>No announcements yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+
+</body>
+</html>

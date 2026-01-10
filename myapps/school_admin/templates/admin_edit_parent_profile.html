@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default:"Edit Parent Profile" }} - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% include "favicon.html" %}
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>{{ title|default:"Edit Parent Profile" }}</h1>
+                    <p class="date">Managing settings for: <strong>{{ edit_user.get_full_name|default:edit_user.username }}</strong></p>
+                </div>
+            </div>
+            <a href="{% url 'school_admin_manage_users' %}" class="btn-module" style="background: var(--bg-color); color: var(--text-color); margin-top:0; border: 1px solid var(--border-color);">
+                <i class="fa fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="form-card" style="max-width: 800px; margin: 30px 0; background: var(--card-bg); border-radius: 16px; padding: 40px; box-shadow: 0 10px 30px var(--shadow-color);">
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 25px; border-radius: 12px; display: flex; align-items: center; gap: 12px; background: rgba(52, 152, 219, 0.1); color: var(--secondary-color); border: 1px solid rgba(52, 152, 219, 0.2);">
+                    <i class="fa fa-info-circle"></i> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="margin:0; color: var(--secondary-color); font-size: 1.2rem;">Parent Profile & Linkages</h3>
+                    <span style="background: var(--bg-color); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; color: #888; border: 1px solid var(--border-color);">
+                        ID: {{ edit_user.custom_id }}
+                    </span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <!-- User Status / Role (Legacy support for the dropdown requirement) -->
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">System Role</label>
+                        <select name="role" class="form-control" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;" disabled>
+                            {% for status in status_choices %}
+                                <option value="{{status}}" {% if edit_user.role == status %}selected{% endif %}>{{status|capfirst}}</option>
+                            {% endfor %}
+                        </select>
+                        <small style="color: var(--text-muted); margin-top: 5px; display: block;">Role cannot be changed from the profile linkage page.</small>
+                    </div>
+
+                    <!-- Parent specific fields from ParentProfileForm -->
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Link Children (Select Multiple)</label>
+                        {{ form.children }}
+                        <small style="color: var(--text-muted); margin-top: 5px; display: block;">Hold Ctrl (or Cmd) to select multiple students.</small>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Home Address</label>
+                            {{ form.address }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; display: flex; gap: 20px; border-top: 1px solid var(--border-color); pt: 30px;">
+                     <button type="submit" class="btn-submit" style="flex: 1; padding: 15px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);">
+                        Save Profile & Links
+                     </button>
+                     <a href="{% url 'school_admin_manage_users' %}" style="display: flex; align-items: center; justify-content: center; flex: 1; padding: 15px; border-radius: 12px; background: var(--bg-color); color: var(--text-color); text-decoration: none; font-weight: 600; border: 1px solid var(--border-color);">
+                        Cancel
+                     </a>
+                </div>
+                
+            </form>
+        </div>
+
+    </main>
+</body>
+</html>

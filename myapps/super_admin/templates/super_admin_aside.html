@@ -1,0 +1,57 @@
+{% load static %}
+<aside class="sidebar">
+    <style>
+        :root {
+            --primary-color: {{ global_settings.primary_color|default:"#4a90e2" }} !important;
+        }
+    </style>
+    <div class="sidebar-header" style="justify-content: flex-start; gap: 15px;">
+        {% if global_settings.logo %}
+            <img src="{{ global_settings.logo.url }}" style="max-height: 35px; max-width: 100%;">
+        {% else %}
+            <i class="fa fa-shield-halved" style="color: var(--primary-color);"></i>
+        {% endif %}
+        <h2 style="font-size: 1.1rem; margin: 0;">{{ global_settings.platform_name|default:"System Admin" }}</h2>
+    </div>
+
+    <ul class="nav-links">
+        <li>
+            <a href="{% url 'super_admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'super_admin_dashboard' %}active{% endif %}">
+                <i class="fa fa-gauge-high"></i> Global Overview
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'super_admin_schools' %}" class="{% if 'schools' in request.path %}active{% endif %}">
+                <i class="fa fa-school"></i> Manage Schools
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'super_admin_plans' %}" class="{% if 'plans' in request.path %}active{% endif %}">
+                <i class="fa fa-tags"></i> Subscription Plans
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'system_settings' %}" class="{% if 'settings' in request.path %}active{% endif %}">
+                <i class="fa fa-cog"></i> System Settings
+            </a>
+        </li>
+
+
+        <li>
+            <a href="/admin/" target="_blank">
+                <i class="fa fa-database"></i> Django Admin (Main)
+            </a>
+        </li>
+    </ul>
+
+    <div class="user-profile">
+        <div class="avatar" style="background: var(--primary-color);">SA</div>
+        <div>
+            <div style="font-weight: 600;">System Administrator</div>
+            <div style="font-size: 0.8rem; color: #888;">Global Root</div>
+        </div>
+        <a href="{% url 'logout' %}" style="margin-left: auto; color: #d9534f;" title="Logout">
+            <i class="fa fa-sign-out-alt"></i>
+        </a>
+    </div>
+</aside>

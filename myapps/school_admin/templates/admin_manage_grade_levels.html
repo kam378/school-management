@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Grade Levels - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <a href="{% url 'admin_academic_overview' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem;"><i class="fa fa-arrow-left"></i> Back to Overview</a>
+                <h1>Grade Levels</h1>
+                <p class="date">Configure the different educational tiers in your school.</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+            <!-- Form Card -->
+            <div class="card">
+                <h3><i class="fa fa-plus-circle"></i> Add Grade Level</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Level Name</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Available Subjects (Curriculum)</label>
+                        {{ form.subjects }}
+                        <small style="color: var(--text-muted);">Hold Ctrl/Cmd to select multiple subjects.</small>
+                    </div>
+                    <button type="submit" class="btn-submit">Save Level</button>
+                </form>
+            </div>
+
+            <!-- List Card -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Grade Name</th>
+                            <th>Curriculum</th>
+                            <th>Classes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for level in levels %}
+                        <tr>
+                            <td>{{ level.id }}</td>
+                            <td style="font-weight: 600;">{{ level.name }}</td>
+                            <td>
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                {% for sub in level.subjects.all %}
+                                    <span class="status-badge status-schema" style="font-size: 0.7rem; padding: 2px 8px;">{{ sub.name }}</span>
+                                {% empty %}
+                                    <span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">No subjects</span>
+                                {% endfor %}
+                                </div>
+                            </td>
+                            <td>{{ level.classrooms.count }} Classes</td>
+                            <td class="actions">
+                                <a href="{% url 'admin_edit_grade_level' level.id %}" class="edit" title="Edit Level"><i class="fa fa-pen"></i></a>
+                                <a href="{% url 'admin_delete_grade_level' level.id %}" 
+                                   class="delete" 
+                                   title="Delete Level"
+                                   onclick="return confirm('Are you sure you want to delete this grade level? All associated classrooms will be removed.')">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 40px;">No grade levels defined yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

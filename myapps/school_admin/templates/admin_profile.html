@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - EduManage</title>
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>My Profile</h1>
+                    <p class="date">Manage your account settings.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="profile-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+            
+            <!-- Personal Info Card -->
+            <div class="card">
+                <h3><i class="fa fa-user-edit"></i> Personal Information</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_profile" value="1">
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="id_first_name">First Name</label>
+                        {{ profile_form.first_name }}
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="id_last_name">Last Name</label>
+                        {{ profile_form.last_name }}
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="id_email">Email Address</label>
+                        {{ profile_form.email }}
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="id_phone_number">Phone Number</label>
+                        {{ profile_form.phone_number }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Security Card -->
+            <div class="card">
+                <h3><i class="fa fa-lock"></i> Security</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+                    
+                    {% for field in password_form %}
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted" style="color: #6c757d; font-size: 0.85em;">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger" style="color: #dc3545; font-size: 0.85em;">
+                            {{ field.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-warning" style="background: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        Change Password
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+    </main>
+    
+    <script>
+        // Make password fields have form-control class if they don't already
+        document.querySelectorAll('input[type="password"]').forEach(el => {
+            el.classList.add('form-control');
+            el.style.width = '100%';
+            el.style.padding = '8px';
+            el.style.marginBottom = '5px';
+            el.style.border = '1px solid #ddd';
+            el.style.borderRadius = '4px';
+        });
+    </script>
+</body>
+</html>

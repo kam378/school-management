@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard Classes - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% if is_teacher %}
+        {% include "teacher_aside.html" %}
+    {% else %}
+        {% include "student_aside.html" %}
+    {% endif %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>Whiteboard Classes</h1>
+                <p class="date">Join virtual classrooms and live sessions.</p>
+            </div>
+            {% if is_teacher %}
+            <a href="{% url 'whiteboard_create' %}" class="btn-primary">
+                <i class="fas fa-plus"></i> Create Class
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="content-wrapper">
+            {% if is_teacher %}
+                <!-- Teacher View: Management Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>My Classes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="premium-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Code</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in rooms %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'whiteboard_page' room.short_code %}" style="font-weight: 600; color: var(--primary-color);">
+                                                {{ room.subject }}
+                                            </a>
+                                        </td>
+                                        <td><code>{{ room.short_code }}</code></td>
+                                        <td>{{ room.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'whiteboard_page' room.short_code %}" class="btn-icon" title="Join" style="color: #2ecc71;">
+                                                    <i class="fas fa-chalkboard"></i>
+                                                </a>
+                                                <a href="{% url 'whiteboard_edit' room.id %}" class="btn-icon" title="Edit" style="color: #f1c40f;">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <!-- Delete Form (Inline for simplicity) -->
+                                                <form action="{% url 'whiteboard_delete' room.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this class?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn-icon" title="Delete" style="color: #e74c3c; border:none; background:none; cursor:pointer;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; padding: 20px; color: var(--text-muted);">No classes created yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Student View: Card Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                    {% for room in rooms %}
+                    <div class="card">
+                        <div class="card-body" style="text-align: center; padding: 30px;">
+                            <div style="width: 60px; height: 60px; background: rgba(74, 144, 226, 0.1); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem;">
+                                <i class="fas fa-chalkboard"></i>
+                            </div>
+                            <h3 style="margin-bottom: 5px;">{{ room.subject }}</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                                Prof. {{ room.teacher.get_full_name|default:room.teacher.username }}
+                            </p>
+                            <a href="{% url 'whiteboard_page' room.short_code %}" class="btn-primary" style="display: block; width: 100%;">
+                                Join Class
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+                        <h4>No active classes found for you.</h4>
+                        <p style="margin-bottom: 30px;">Check back later or ask your teacher.</p>
+
+                        <!-- Diagnostic Helper -->
+                        <div style="max-width: 400px; margin: 0 auto; padding: 20px; background: rgba(0,0,0,0.03); border-radius: 12px; font-size: 0.85rem; text-align: left;">
+                            <h5 style="margin-bottom: 10px; color: var(--text-main);">
+                                <i class="fas fa-info-circle"></i> Visibility Diagnostics
+                            </h5>
+                            {% if diagnostic.has_profile %}
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Grade Level:</span>
+                                    <span style="font-weight: 600;">{{ diagnostic.grade_level }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Classroom:</span>
+                                    <span style="font-weight: 600;">{{ diagnostic.classroom }}</span>
+                                </div>
+                                <p style="margin-top: 15px; font-style: italic; font-size: 0.75rem;">
+                                    Note: You only see rooms assigned to your Grade, Class, or your individual account.
+                                </p>
+                            {% else %}
+                                <p style="color: #e74c3c; font-weight: 600;">Warning: No student profile detected!</p>
+                                <p>Please ask the administrator to set up your academic profile (Grade and Classroom).</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+    
+    <!-- Mobile Toggle Script (Copy from other templates if needed) -->
+    <script>
+        // Ensure sidebar toggle works if present in aside
+    </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+/* Main Container */
+
+main{
+  /* width: 82%; */
+  height: 100%;
+  background-color: var(--background-color);
+  transition: all 1s;
+  overflow-y: hidden;
+}
+
+main .header{
+  width: 100%;
+  height: 8.5vh;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px ;
+}
+
+main .header h1{
+  font-family: "Inter-Light";
+  font-size: 20px;
+}
+
+main .header div{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+main .header button{
+  background-color: transparent;
+  border: none;
+  position: relative;
+}
+
+.notification-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.notification-icon:hover{
+  color: purple;
+}
+
+.settings-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.settings-icon:hover{
+  color: purple;
+}
+
+main .header button span{
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: red;
+  border-radius: 50%;
+  font-size: 15px;
+  color: white;
+}
+
+.grade-container{
+  width: 100%;
+  height: 91.5vh;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  overflow-y: scroll;
+}
+
+.grade-container .grade-record{
+  font-family: "Inter-Thin";
+  width: 95%;
+  height: fit-content;
+  background-color: var(--secondary-color);
+  margin: 20px 0px;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.1);
+}
+
+.grade-container .grade-record .heading{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.grade-container .heading h3{
+  font-family: "Inter-Light";
+}
+
+.grade-container .heading button{
+  background-color: #9333EA;
+  padding: 12px 23px;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.grade-record .grade-cards{
+  width: 100%;
+  /* height: 20vh; */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.grade-cards .card1{
+  border: 1px solid #f3e8ff;
+  background-color: #faf5ff;
+}
+
+.grade-cards .card1 .card-details{
+  color: #9333ea;
+}
+
+.grade-cards .card2{
+  background-color: #f0fdf4;
+  border: 1px solid #dcfce7;
+}
+
+.grade-cards .card2 .card-details{
+  color: #16a34a;
+}
+
+.grade-cards .card3{
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
+}
+
+.grade-cards .card3 .card-details{
+  color: #2563eb;
+}
+
+.grade-cards .grade-card{
+  width: 32%;
+  height: 20vh;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.grade-card .card-heading{
+  font-family: "Inter-Thin";
+  font-weight: 100;
+}
+
+.grade-card .card-details{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grade-card .card-details h3{
+  font-size: 30px;
+  font-family: "Inter-Bold";
+  font-weight: 900;
+}
+
+.card-icon{
+  font-size: 35px;
+}
+
+.term-links .links{
+  color: var(--secondary-text-color);
+  margin: 5px 10px;
+}
+
+.term-links .links:hover{
+  cursor: pointer;
+  color: #9333EA;
+}
+
+.term-links .active{
+  border-bottom:2px solid #9333EA ;
+  color: #9333EA;
+  padding: 5px 10px;
+}
+
+.term-table{
+  width: 100%;
+  margin: 20px 0px;
+}
+
+.term-table table{
+  width: 100%;
+  border-collapse: collapse;
+  display: none;
+}
+
+.term-table .active{
+  display: table;
+}
+
+.term-table table thead{
+  font-family: "Inter-Thin";
+  font-size: 12px;
+  letter-spacing: 1px;
+  width: 100%;
+  height: 2vh;
+  background-color: var(--background-color);
+  color: var(--timetable-text-color);
+}
+
+.term-table table thead tr th{
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.term-table table tbody tr td{
+  padding: 10px;
+}
+
+.feedback-container{
+  width: 100%;
+  height: 30vh;
+}
+
+.feedback-container .feedback-heading{
+  width: 100%;
+  margin: 20px 0px;
+}
+
+.feedback-container .feedback{
+  width: 100%;
+  height: fit-content;
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.feedback .comment{
+  width: 100%;
+  display: flex;
+}
+
+.comment .pic{
+  margin: 10px;
+}
+
+.comment .pic .user-icon{
+  font-size: 30px;
+}
+
+.comment .comment-info{
+  margin: 8px 0px 10px 20px ;
+}
+
+@media (max-width: 1000px) {
+
+  .grade-container{
+    padding-bottom: 20vh;
+  }
+
+  .grade-cards{
+    height: fit-content;
+  }
+  .grade-cards .grade-card{
+    width: 35%;
+    margin: 20px 5px;
+    padding: 50px;
+    display: flex;
+    align-items: center;
+  }
+
+  .grade-record{
+    padding-bottom: 20vh;
+  }
+
+  .table-heading{
+    height: 120vh;
+  }
+
+  .card-heading{
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .card-heading p{
+    font-family: "Inter-Light";
+    font-size: 15px;
+  }
+
+  .grade-card h3{
+    font-size: 15px;
+  }
+
+  main .header{
+    padding: 30px 20px;
+    /* display: none; */
+  }
+
+  .card-icon{
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 428px) {
+  .grade-cards .grade-card{
+    width: 90%;
+    height: 15vh;
+    margin: 10px 0px;
+    padding: 20px;
+  }
+
+  .grade-card h3{
+    font-size: 10px;
+  }
+
+  .card-icon{
+    font-size: 20px;
+  }
+
+  .links{
+    font-size: 12px;
+  }
+
+  table{
+    background-color: var(--secondary-color);
+    padding: 20px;
+    border-radius: 20px;
+    margin: 20px;
+  }
+
+}
+
+@media print {
+  body, body *{
+    visibility: hidden;
+  }  
+  .grade-record, .grade-record *{
+    visibility: visible;
+  }
+
+  .grade-record{
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}

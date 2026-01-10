@@ -1,0 +1,201 @@
+{% load static %}
+{% load core_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ class_subject.subject.name }} Gradebook - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradebook-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            overflow: auto;
+            max-width: 100%;
+        }
+        .grade-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <a href="{% url 'teacher_classes' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <i class="fa fa-arrow-left"></i> Back to Classes
+                </a>
+                <h1>{{ class_subject.subject.name }} ({{ class_subject.classroom.name }})</h1>
+                <p class="date">Managing grades and performance for this group.</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-module" style="margin: 0; background: var(--primary-color);">
+                    <i class="fa fa-plus"></i> New Assignment
+                </button>
+            </div>
+        </div>
+
+        <div class="gradebook-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th style="position: sticky; left: 0; background: var(--bg-color); z-index: 10;">Student Name</th>
+                        {% for assignment in assignments %}
+                        <th style="min-width: 120px; text-align: center;">
+                            {{ assignment.title }}
+                            <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Max: {{ assignment.max_score }}</div>
+                        </th>
+                        {% empty %}
+                        <th style="text-align: center; color: var(--text-muted);">No Assignments</th>
+                        {% endfor %}
+                        <th style="text-align: center;">Avg (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td style="position: sticky; left: 0; background: var(--card-bg); font-weight: 600; z-index: 5;">
+                            {{ student.get_full_name|default:student.username }}
+                            <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 400;">{{ student.custom_id }}</div>
+                        </td>
+                        {% for assignment in assignments %}
+                        <td style="text-align: center;">
+                            {% with student_id=student.id assignment_id=assignment.id %}
+                                {% with student_matrix=grade_matrix|get_item:student_id %}
+                                    <span class="grade-cell" 
+                                          data-student-id="{{ student.id }}" 
+                                          data-assignment-id="{{ assignment.id }}"
+                                          data-max-score="{{ assignment.max_score }}"
+                                          style="display: inline-block; min-width: 50px; padding: 8px 12px; border-radius: 6px; background: rgba(74, 144, 226, 0.1); color: var(--primary-color); cursor: pointer; font-weight: 600; transition: 0.2s;"
+                                          title="Click to edit grade">
+                                        {{ student_matrix|get_item:assignment_id }}
+                                    </span>
+                                {% endwith %}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                        <td style="text-align: center; font-weight: 700; color: var(--primary-color);">
+                            -
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ assignments.count|add:2 }}" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            No students enrolled in this classroom.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+    // Get CSRF token for AJAX requests
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Make grade cells editable
+    document.querySelectorAll('.grade-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const currentValue = this.textContent.trim();
+            const studentId = this.dataset.studentId;
+            const assignmentId = this.dataset.assignmentId;
+            const maxScore = this.dataset.maxScore;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'grade-input';
+            input.value = currentValue === '-' ? '' : currentValue;
+            input.step = '0.1';
+            input.min = '0';
+            input.max = maxScore;
+            input.placeholder = `0-${maxScore}`;
+            
+            // Replace cell content with input
+            this.textContent = '';
+            this.appendChild(input);
+            input.focus();
+            input.select();
+            
+            // Handle blur (save)
+            const saveGrade = () => {
+                const newValue = input.value.trim();
+                
+                // Send AJAX request
+                fetch('{% url "enter_grade" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `student_id=${studentId}&assignment_id=${assignmentId}&score=${newValue}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        cell.textContent = data.score;
+                        cell.style.background = 'rgba(46, 204, 113, 0.1)';
+                        cell.style.color = '#27ae60';
+                        setTimeout(() => {
+                            cell.style.background = 'rgba(74, 144, 226, 0.1)';
+                            cell.style.color = 'var(--primary-color)';
+                        }, 1000);
+                    } else {
+                        alert('Error: ' + data.error);
+                        cell.textContent = currentValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to save grade');
+                    cell.textContent = currentValue;
+                });
+            };
+            
+            input.addEventListener('blur', saveGrade);
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+            });
+        });
+        
+        // Add hover effect
+        cell.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(74, 144, 226, 0.2)';
+        });
+        cell.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(74, 144, 226, 0.1)';
+        });
+    });
+    </script>
+
+</body>
+</html>

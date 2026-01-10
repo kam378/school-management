@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% include "favicon.html" %}
+    <style>
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+        .filter-input:focus { border-color: var(--primary-color); }
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-add:hover { background: #357abd; }
+    </style>
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>User Management</h1>
+                    <p class="date">Manage students, teachers, and staff.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        <form method="GET" class="filter-bar">
+            <div class="filter-group">
+                <i class="fa fa-search" style="color:#888;"></i>
+                <input type="text" name="search" class="filter-input" placeholder="Search by name, ID, or email..." value="{{ search_query }}">
+            </div>
+            <div class="filter-group">
+                <select name="role" class="filter-input" onchange="this.form.submit()">
+                    <option value="">All Roles</option>
+                    <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+                    <option value="teacher" {% if role_filter == 'teacher' %}selected{% endif %}>Teacher</option>
+                    <option value="parent" {% if role_filter == 'parent' %}selected{% endif %}>Parent</option>
+                    <option value="school_admin" {% if role_filter == 'school_admin' %}selected{% endif %}>School Admin</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-add" style="background: #27ae60;">
+                <i class="fa fa-filter"></i> Apply Filters
+            </button>
+            <a href="{% url 'school_admin_manage_users' %}" class="btn-add" style="background: #95a5a6;">
+                <i class="fa fa-rotate-right"></i> Reset
+            </a>
+            <a href="{% url 'school_admin_add_user' %}" class="btn-add">
+                <i class="fa fa-plus"></i> Add New User
+            </a>
+        </form>
+
+        <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa fa-users"></i> Showing {{ users.count }} user{{ users.count|pluralize }}
+            {% if search_query or role_filter %}
+                <span style="color: var(--primary-color); font-weight: 500;">
+                    (filtered{% if search_query %} by "{{ search_query }}"{% endif %}{% if role_filter %} - {{ role_filter|capfirst }}s only{% endif %})
+                </span>
+            {% endif %}
+        </div>
+
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td data-label="User ID">#{{ user.custom_id|default:"-" }}</td>
+                    <td data-label="Name">
+                        <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; /* right align for mobile label offset layout */">
+                            <!-- Mobile CSS handles text-align: right, but flex might fight it. Let's simplify. --> 
+                           <span style="font-weight: 500; color: var(--secondary-color);">{{ user.get_full_name|default:user.username }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Role"><span style="text-transform: capitalize;">{{ user.role }}</span></td>
+                    <td data-label="Email">{{ user.email }}</td>
+                    <td data-label="Status">
+                        {% if user.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                        {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions" class="actions">
+                        {% if user.role == 'parent' %}
+                        <a href="{% url 'admin_edit_parent_profile' user.custom_id %}" style="color: var(--primary-color);" title="Link Children"><i class="fa fa-children"></i></a>
+                        {% endif %}
+                        <a href="{% url 'school_admin_edit_user' user.custom_id %}" class="edit" title="Edit"><i class="fa fa-pen"></i></a>
+                        <a href="{% url 'school_admin_reset_password' user.custom_id %}" style="color: #f39c12;" title="Reset Password"><i class="fa fa-key"></i></a>
+                        <a href="{% url 'school_admin_delete_user' user.custom_id %}" class="delete" title="Delete" onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.')"><i class="fa fa-trash-can"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #888;">
+                        No users found. <a href="{% url 'school_admin_add_user' %}" style="color: var(--primary-color);">Add one now</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </main>
+</body>
+</html>

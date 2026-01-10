@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ announcement.title }} - Announcement</title>
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                   <a href="{% url 'school_admin_announcements' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                       <i class="fa fa-arrow-left"></i> Back to Announcements
+                   </a>
+                   <h1 style="font-size: 1.5rem; margin: 0;">Announcement</h1>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        <div class="detail-card">
+            <h1 class="detail-title">{{ announcement.title }}</h1>
+            <div class="detail-meta">
+                <span><i class="fa fa-calendar-alt"></i> {{ announcement.date|date:"F d, Y" }}</span>
+                <span><i class="fa fa-user"></i> {{ announcement.author }}</span>
+            </div>
+            
+            <div style="min-height: 200px;">
+                {{ announcement.body|linebreaks }}
+            </div>
+            
+             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px;">
+                <a href="{% url 'school_admin_edit_announcement' announcement.id %}" class="btn-module" style="background: var(--secondary-color); color: white; width: auto; padding: 10px 20px;">
+                    <i class="fa fa-pen"></i> Edit
+                </a>
+                <a href="{% url 'school_admin_delete_anouncement' announcement.id %}" class="btn-module" style="background: #ffebee; color: #c62828; width: auto; padding: 10px 20px;">
+                    <i class="fa fa-trash-can"></i> Delete
+                </a>
+            </div>
+            
+        </div>
+
+    </main>
+</body>
+</html>

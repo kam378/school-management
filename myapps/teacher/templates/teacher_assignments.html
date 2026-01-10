@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assignments - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>Assignments</h1>
+                <p class="date">Manage coursework and projects for your classes.</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <a href="{% url 'teacher_add_assignment' %}" class="btn-module" style="margin: 0; background: var(--primary-color);">
+                    <i class="fa fa-plus"></i> New Assignment
+                </a>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Subject / Class</th>
+                        <th>Assignment Title</th>
+                        <th>Max Score</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ assignment.class_subject.subject.name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ assignment.class_subject.classroom.name }}</div>
+                        </td>
+                        <td style="font-weight: 600;">{{ assignment.title }}</td>
+                        <td style="text-align: center;">{{ assignment.max_score }}</td>
+                        <td>{{ assignment.due_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge status-active">Live</span>
+                        </td>
+                        <td class="actions">
+                            <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" title="View Gradebook"><i class="fa fa-table"></i></a>
+                            <a href="{% url 'teacher_edit_assignment' assignment.id %}" class="edit" title="Edit Assignment"><i class="fa fa-pen"></i></a>
+                            <a href="{% url 'teacher_delete_assignment' assignment.id %}" class="delete" title="Delete Assignment"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            No assignments created yet. Click "New Assignment" to get started!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>{{ title }}</h1>
+                <p class="date">Configure your virtual classroom settings.</p>
+            </div>
+            <a href="{% url 'whiteboard_dashboard' %}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="content-wrapper" style="max-width: 800px; margin: 0 auto;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Class Details</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.subject.id_for_label }}" style="font-weight:600;">Subject/Topic</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                                <div class="text-danger small" style="color: #e74c3c;">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <hr style="margin: 30px 0; border-top: 1px solid var(--border-color);">
+                        
+                        <h4 style="margin-bottom: 20px;">Who can access this class?</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="font-weight:600;">Allowed Grade Levels</label>
+                                <div class="scrollable-checkboxes" style="border: 1px solid var(--border-color); padding: 10px; max-height: 200px; overflow-y: auto; border-radius: 4px;">
+                                    {{ form.allowed_grade_levels }}
+                                </div>
+                                <small style="color: var(--text-muted);">{{ form.allowed_grade_levels.help_text }}</small>
+                            </div>
+                            <div>
+                                <label style="font-weight:600;">Allowed Classrooms</label>
+                                <div class="scrollable-checkboxes" style="border: 1px solid var(--border-color); padding: 10px; max-height: 200px; overflow-y: auto; border-radius: 4px;">
+                                    {{ form.allowed_classrooms }}
+                                </div>
+                                <small style="color: var(--text-muted);">{{ form.allowed_classrooms.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3" style="margin-top: 20px;">
+                            <label style="font-weight:600;">Individual Student Overrides (Optional)</label>
+                            {{ form.students }}
+                            <small style="color: var(--text-muted);">Hold Ctrl/Cmd to select multiple students.</small>
+                        </div>
+
+                        <div style="margin-top: 30px; display: flex; gap: 10px;">
+                            <button type="submit" class="btn-primary" style="flex: 1;">
+                                <i class="fas fa-save"></i> Save Class
+                            </button>
+                            <a href="{% url 'whiteboard_dashboard' %}" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: 10px; background: #e0e0e0; color: #333; border-radius: 4px;">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        /* Custom styles for form elements if theme.css doesn't cover everything */
+        .form-control { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color); }
+        .scrollable-checkboxes ul { list-style: none; padding: 0; margin: 0; }
+        .scrollable-checkboxes li { margin-bottom: 5px; }
+        .scrollable-checkboxes input { margin-right: 8px; }
+    </style>
+</body>
+</html>

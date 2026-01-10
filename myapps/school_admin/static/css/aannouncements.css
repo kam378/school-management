@@ -1,0 +1,39 @@
+.assignments nav{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assignments nav a{
+  padding: 10px;
+  border-radius: 5px;
+  background-color: purple;
+  color: white;
+  text-decoration: none;
+}
+
+.sect-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sect-footer span{
+  display: flex;
+  gap: 20px;
+}
+
+.edit{
+  color: purple;
+}
+
+.delete{
+  color: red;
+}
+
+@media (max-width: 500px) {
+  .assignments nav a{
+    padding: 5px;
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% include "favicon.html" %}
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Edit User Profile</h1>
+                    <p class="date">Managing settings for: <strong>{{ user_to_edit.get_full_name|default:user_to_edit.username }}</strong></p>
+                </div>
+            </div>
+            <a href="{% url 'school_admin_manage_users' %}" class="btn-module" style="background: var(--bg-color); color: var(--text-color); margin-top:0; border: 1px solid var(--border-color);">
+                <i class="fa fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="form-card" style="max-width: 800px; margin: 30px 0; background: var(--card-bg); border-radius: 16px; padding: 40px; box-shadow: 0 10px 30px var(--shadow-color);">
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 15px; margin-bottom: 25px; border-radius: 12px; display: flex; align-items: center; gap: 12px; background: rgba(52, 152, 219, 0.1); color: var(--secondary-color); border: 1px solid rgba(52, 152, 219, 0.2);">
+                    <i class="fa fa-info-circle"></i> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="margin:0; color: var(--secondary-color); font-size: 1.2rem;">Account Information</h3>
+                    <span style="background: var(--bg-color); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; color: #888; border: 1px solid var(--border-color);">
+                        ID: {{ user_to_edit.custom_id }}
+                    </span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ user_to_edit.username }}" required style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Email Address</label>
+                        <input type="email" name="email" class="form-control" value="{{ user_to_edit.email }}" required style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user_to_edit.first_name }}" required style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user_to_edit.last_name }}" required style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">System Role</label>
+                        <select name="role" class="form-control" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                            {% for status in status_choices %}
+                                <option value="{{status}}" {% if user_to_edit.role == status %}selected{% endif %}>{{status|capfirst}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Phone Number</label>
+                        <input type="text" name="phone_number" class="form-control" value="{{ user_to_edit.phone_number|default:'' }}" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">Date of Birth</label>
+                        <input type="date" name="birth_date" class="form-control" value="{{ user_to_edit.birth_date|date:'Y-m-d' }}" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                        <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <input type="checkbox" name="is_active" id="active" style="width: 20px; height: 20px; cursor: pointer;" {% if user_to_edit.is_active %}checked{% endif %}>
+                            <label for="active" style="margin:0; cursor: pointer; color: var(--text-color); font-weight: 500;">Account Active</label>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if profile_form %}
+                <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+                    <h3 style="margin:0 0 20px 0; color: var(--secondary-color); font-size: 1.2rem;">Profile Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                        {% for field in profile_form %}
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 0.9rem; color: var(--text-color);">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="margin-top: 40px; display: flex; gap: 20px; border-top: 1px solid var(--border-color); pt: 30px;">
+                     <button type="submit" class="btn-submit" style="flex: 1; padding: 15px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);">
+                        Update Profile
+                     </button>
+                     <a href="{% url 'school_admin_reset_password' user.custom_id %}" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; padding: 15px; border-radius: 12px; background: #f39c12; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);">
+                        <i class="fa fa-key"></i> Reset Password
+                     </a>
+                </div>
+                
+            </form>
+        </div>
+
+    </main>
+</body>
+</html>

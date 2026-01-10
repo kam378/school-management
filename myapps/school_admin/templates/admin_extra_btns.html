@@ -1,0 +1,15 @@
+{% load static %}
+<div style="display: flex; gap: 15px;">
+    <!-- Notifications -->
+    <a href="{% url 'school_admin_user_notifications' %}" class="icon-btn" title="Notifications">
+        <i class="fa fa-bell"></i>
+        {% if user_notification_count and user_notification_count > 0 %}
+            <span class="badge">{{ user_notification_count }}</span>
+        {% endif %}
+    </a>
+
+    <!-- Settings (or Messages) -->
+    <a href="{% url 'school_admin_settings' %}" class="icon-btn" title="Settings">
+        <i class="fa fa-cog"></i>
+    </a>
+</div>

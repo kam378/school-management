@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>My Students</h1>
+                    <p class="date">View and manage student information</p>
+                </div>
+            </div>
+        </div>
+
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Email</th>
+                    <th>Attendance</th>
+                    <th>Grade</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><i class="fa fa-user-circle" style="color: var(--primary-color); margin-right: 8px;"></i> Emily Johnson</td>
+                    <td>Grade 10A</td>
+                    <td>emily.j@school.edu</td>
+                    <td><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">95%</span></td>
+                    <td><strong>A</strong></td>
+                    <td>
+                        <a href="#" style="color: var(--primary-color); margin-right: 10px;" title="View Profile"><i class="fa fa-eye"></i></a>
+                        <a href="#" style="color: var(--secondary-color);" title="Send Message"><i class="fa fa-envelope"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td><i class="fa fa-user-circle" style="color: var(--primary-color); margin-right: 8px;"></i> Michael Chen</td>
+                    <td>Grade 10A</td>
+                    <td>michael.c@school.edu</td>
+                    <td><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">92%</span></td>
+                    <td><strong>A-</strong></td>
+                    <td>
+                        <a href="#" style="color: var(--primary-color); margin-right: 10px;" title="View Profile"><i class="fa fa-eye"></i></a>
+                        <a href="#" style="color: var(--secondary-color);" title="Send Message"><i class="fa fa-envelope"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td><i class="fa fa-user-circle" style="color: var(--primary-color); margin-right: 8px;"></i> Sarah Williams</td>
+                    <td>Grade 10A</td>
+                    <td>sarah.w@school.edu</td>
+                    <td><span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">88%</span></td>
+                    <td><strong>B+</strong></td>
+                    <td>
+                        <a href="#" style="color: var(--primary-color); margin-right: 10px;" title="View Profile"><i class="fa fa-eye"></i></a>
+                        <a href="#" style="color: var(--secondary-color);" title="Send Message"><i class="fa fa-envelope"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td><i class="fa fa-user-circle" style="color: var(--primary-color); margin-right: 8px;"></i> David Martinez</td>
+                    <td>Grade 10B</td>
+                    <td>david.m@school.edu</td>
+                    <td><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">97%</span></td>
+                    <td><strong>A+</strong></td>
+                    <td>
+                        <a href="#" style="color: var(--primary-color); margin-right: 10px;" title="View Profile"><i class="fa fa-eye"></i></a>
+                        <a href="#" style="color: var(--secondary-color);" title="Send Message"><i class="fa fa-envelope"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </main>
+
+</body>
+</html>

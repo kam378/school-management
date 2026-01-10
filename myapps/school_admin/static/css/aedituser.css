@@ -1,0 +1,247 @@
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+/* Main Container */
+
+main{
+  height: 100%;
+  background-color: var(--background-color);
+  transition: all 1s;
+  overflow-y: hidden;
+}
+
+
+main .header{
+  width: 100%;
+  height: 8.5vh;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px ;
+}
+
+main .header h1{
+  font-family: "Inter-Light";
+  font-size: 20px;
+}
+
+main .header div{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+main .header button{
+  background-color: transparent;
+  border: none;
+  position: relative;
+}
+
+.notification-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.notification-icon:hover{
+  color: purple;
+}
+
+.settings-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.settings-icon:hover{
+  color: purple;
+}
+
+main .header button span{
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: red;
+  border-radius: 50%;
+  font-size: 15px;
+  color: white;
+}
+
+.main-content{
+  height: 91.5vh;
+  width: 100%;
+  overflow-y: scroll;
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 30px 0px;
+}
+
+.main-content-container{
+  width: 95%;
+  height: 100%;
+  background-color: var(--secondary-color);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.main-content-container::-webkit-scrollbar{
+  display: none;
+}
+
+.main-content-header{
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Inter-Light";
+  margin-bottom: 20px;
+}
+
+.edit-form{
+  width: 100%;
+  height: 85%;
+  overflow-y: scroll;
+}
+
+.edit-form::-webkit-scrollbar{
+  display: none;
+}
+
+.edit-form form{
+  width: 100%;
+  height: 100%;
+  /* display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap; */
+  padding: 30px;
+}
+
+.edit-form form p{
+  width: 100%;
+  font-size: 13px;
+  height: auto;
+}
+
+.edit-form form input{
+  width: 90%;
+  height: 30px;
+  margin: 10px 0px;
+  font-size: 12px;
+  padding: 0px 20px;
+  border: none;
+  outline: none;
+  background-color: #1f293799;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-form form select{
+  width: 90%;
+  height: 30px;
+  margin: 10px 0px;
+  font-size: 12px;
+  padding: 0px 20px;
+  border: none;
+  outline: none;
+  background-color: #1f293799;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-form form select option{
+  font-size: 10px;
+}
+
+.edit-form form span{
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+}
+
+.edit-form form .checkbox{
+  width: 15px;
+}
+
+.edit-form form .checkbox:checked{
+  scale: 1.1;
+}
+
+.edit-form form button{
+  width: 45%;
+  height: 45px;
+  border: none;
+  background-color: #1f2937;
+  color: white;
+  cursor: pointer;
+}
+
+@media (max-height: 480px) {
+  .main-content{
+    padding: 10px;
+  }
+  .main-content-container{
+    overflow-y: scroll;
+    width: 98%;
+  }
+}
+
+@media (max-width: 550px) {
+  main .header h1{
+    font-size: 15px;
+  }
+
+  .main-content-header{
+    font-size: 12px;
+  }
+
+  .edit-form form{
+    padding: 10px;
+  }
+  .edit-form form input, .edit-form form select{
+    width: 100%;
+  }
+  .edit-form form button{
+    width: 49%;
+  }
+}
+
+@media (max-width: 400px) {
+  main .header h1{
+    font-size: 12px;
+  }
+  .notification-icon, .settings-icon{
+    font-size: 20px;
+  }
+}

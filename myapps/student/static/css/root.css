@@ -1,0 +1,66 @@
+/* Declaring basic variables and importing fonts  */
+
+
+:root{
+  --background-color: aliceblue;
+  --nav-background-color: #1F2937;
+  --secondary-color: #FFFFFF;
+  --text-color: #000000;
+  --secondary-text-color: #00000069;
+  --border-color: #0000001e;
+  --timetable-text-color: #4b5563;
+}
+
+@font-face {
+  font-family: Inter-black;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-Black.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Bold;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-Bold.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Semi-Bold;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-SemiBold.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Regular;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-Regular.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Light;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-Light.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Thin;
+  src: url(../assets/fonts/Inter/Inter/Inter_18pt-Thin.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter-Regular";
+}
+
+/* *:active{
+  background-color: transparent;
+} */

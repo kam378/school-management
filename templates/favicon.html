@@ -1,0 +1,7 @@
+{% load static %}
+
+{% if global_settings.logo %}
+<link rel="shortcut icon" href="{{ global_settings.logo.url }}" type="image/svg">
+{% else %}
+<link rel="shortcut icon" href="{% static 'favicon.svg' %}" type="image/svg">
+{% endif %}

@@ -1,0 +1,475 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - {{ user.get_full_name|default:user.username }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --chat-sidebar-width: 320px;
+            --chat-primary: var(--primary-color, #4a90e2);
+            --chat-bg: var(--bg-color, #f0f2f5);
+            --chat-card: var(--card-bg, #ffffff);
+            --chat-border: var(--border-color, #e4e6eb);
+            --chat-text: var(--text-color, #050505);
+            --chat-muted: var(--text-muted, #65676b);
+        }
+
+        body {
+            background-color: var(--chat-bg);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: inherit;
+            color: var(--chat-text);
+        }
+
+        .chat-app {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* Sidebar - Contacts */
+        .chat-sidebar {
+            width: var(--chat-sidebar-width);
+            background: var(--chat-card);
+            border-right: 1px solid var(--chat-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--chat-border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--chat-text);
+        }
+
+        .search-box {
+            padding: 12px 20px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            background: var(--chat-bg);
+            border-radius: 20px;
+            padding: 8px 15px 8px 35px;
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--chat-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.9rem;
+            color: var(--chat-text);
+        }
+
+        .contact-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .contact-item:hover { background: var(--chat-bg); }
+        .contact-item.active { background: rgba(74, 144, 226, 0.1); }
+
+        .avatar-wrapper {
+            position: relative;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--chat-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #95a5a6;
+            border: 2px solid var(--chat-card);
+        }
+
+        .status-dot.online {
+            background: #31a24c;
+            box-shadow: 0 0 5px rgba(49, 162, 76, 0.5);
+        }
+
+        .contact-meta { flex: 1; min-width: 0; }
+        .contact-name { font-weight: 600; display: block; margin-bottom: 2px; }
+        .contact-role { font-size: 0.75rem; color: var(--chat-muted); text-transform: capitalize; }
+
+        /* Main Chat Area */
+        .chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-card);
+            position: relative;
+        }
+
+        .chat-header {
+            height: 70px;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--chat-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--chat-card);
+            z-index: 10;
+        }
+
+        .chat-header-user { display: flex; align-items: center; gap: 12px; }
+
+        .back-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--chat-primary);
+            cursor: pointer;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .message-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--chat-bg);
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+            background: var(--chat-primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-received {
+            align-self: flex-start;
+            background: #e4e6eb;
+            color: #050505;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background: var(--chat-card);
+            border-top: 1px solid var(--chat-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: var(--chat-bg);
+            border-radius: 25px;
+            padding: 10px 18px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--chat-text);
+            font-size: 0.95rem;
+        }
+
+        .send-btn {
+            background: none;
+            border: none;
+            color: var(--chat-primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .send-btn:hover { transform: scale(1.1); color: #357abd; }
+
+        /* Empty State */
+        .empty-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--chat-muted);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-view i { font-size: 5rem; color: var(--chat-border); margin-bottom: 20px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+                transform: translateX(-100%);
+            }
+            .chat-sidebar.active { transform: translateX(0); }
+            
+            .chat-view { width: 100%; }
+            .back-btn { display: block; }
+
+            .message { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-app">
+    <!-- Sidebar -->
+    <aside class="chat-sidebar {% if not active_room %}active{% endif %}" id="chat-sidebar">
+        <div class="sidebar-header">
+            <h1>Messages</h1>
+            <a href="/" style="color: var(--chat-muted);"><i class="fa fa-times fa-lg"></i></a>
+        </div>
+        
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="Search Messenger" class="search-input" id="contact-search">
+            </div>
+        </div>
+
+        <div class="contact-list" id="contact-list">
+            {% for contact in contacts %}
+            <a href="{% url 'start_chat' contact.id %}" class="contact-item {% if other_user and other_user.id == contact.id %}active{% endif %}">
+                <div class="avatar-wrapper">
+                    <div class="avatar">{{ contact.first_name|first|upper }}</div>
+                    <span class="status-dot" data-user-id="{{ contact.id }}"></span>
+                </div>
+                <div class="contact-meta">
+                    <span class="contact-name">{{ contact.get_full_name|default:contact.username }}</span>
+                    <span class="contact-role">{{ contact.role }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-view" style="padding-top: 20px;">
+                <p>No contacts yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Chat View -->
+    <main class="chat-view">
+        {% if active_room %}
+            <header class="chat-header">
+                <div class="chat-header-user">
+                    <button class="back-btn" onclick="toggleSidebar(true)"><i class="fa fa-chevron-left"></i></button>
+                    <div class="avatar-wrapper">
+                        <div class="avatar" style="width:40px; height:40px; font-size:1rem;">
+                            {{ other_user.first_name|first|upper }}
+                        </div>
+                        <span class="status-dot online"></span>
+                    </div>
+                    <div>
+                        <span class="contact-name" style="margin:0;">{{ other_user.get_full_name|default:other_user.username }}</span>
+                        <span class="contact-role" id="presence-text">Active Now</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                     <i class="fa fa-info-circle fa-lg" style="color: var(--chat-primary); cursor: pointer;"></i>
+                </div>
+            </header>
+
+            <div class="message-container" id="chat-log">
+                {% for msg in chat_history %}
+                    <div class="message {% if msg.sender == user %}message-sent{% else %}message-received{% endif %}">
+                        {{ msg.content }}
+                        <span class="message-time">
+                            {{ msg.timestamp|date:"H:i" }} 
+                            {% if msg.sender == user %}
+                                <i class="fa fa-check{% if msg.is_read %}-double{% endif %}"></i>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" placeholder="Aa" autocomplete="off">
+                </div>
+                <button class="send-btn" id="btn-send">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </div>
+        {% else %}
+            <div class="empty-view">
+                <i class="fa fa-comments"></i>
+                <h2>Select a chat to start messaging</h2>
+                <p>Stay connected with your teachers, staff, and peers.</p>
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+{% if active_room %}
+    {{ active_room|json_script:"room-name" }}
+    {{ user.username|json_script:"user-name" }}
+
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const userName = JSON.parse(document.getElementById('user-name').textContent);
+        const chatLog = document.getElementById('chat-log');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('btn-send');
+
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const chatSocket = new WebSocket(
+            protocol + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        function scrollToBottom() {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+        if(chatLog) scrollToBottom();
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if(data.type === 'chat_message') {
+                const isMe = data.sender === userName;
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${isMe ? 'message-sent' : 'message-received'}`;
+                
+                const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                msgDiv.innerHTML = `
+                    ${data.message}
+                    <span class="message-time">
+                        ${timeStr} ${isMe ? '<i class="fa fa-check"></i>' : ''}
+                    </span>
+                `;
+                chatLog.appendChild(msgDiv);
+                scrollToBottom();
+            }
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+            // Optimistic reconnect would go here
+        };
+
+        chatInput.focus();
+        chatInput.onkeyup = function(e) {
+            if (e.keyCode === 13) sendBtn.click();
+        };
+
+        sendBtn.onclick = function() {
+            const message = chatInput.value.trim();
+            if (message) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'chat_message',
+                    'message': message
+                }));
+                chatInput.value = '';
+            }
+        };
+
+        function toggleSidebar(show) {
+            const sidebar = document.getElementById('chat-sidebar');
+            if(show) sidebar.classList.add('active');
+            else sidebar.classList.remove('active');
+        }
+    </script>
+{% endif %}
+
+<script>
+    // Search Functionality
+    const contactSearch = document.getElementById('contact-search');
+    if(contactSearch) {
+        contactSearch.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.contact-item').forEach(item => {
+                const name = item.querySelector('.contact-name').innerText.toLowerCase();
+                item.style.display = name.includes(term) ? 'flex' : 'none';
+            });
+        });
+    }
+
+    // Handle Mobile View Transitions
+    window.addEventListener('resize', () => {
+        if(window.innerWidth > 768) {
+            document.getElementById('chat-sidebar').classList.remove('active');
+        }
+    });
+</script>
+
+</body>
+</html>

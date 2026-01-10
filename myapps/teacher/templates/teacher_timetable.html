@@ -1,0 +1,148 @@
+{% load static %}
+{% load core_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Timetable - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .timetable-grid {
+            overflow-x: auto;
+        }
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .timetable-table th {
+            background: var(--bg-color);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .timetable-table td {
+            padding: 20px 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+        .time-slot {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .class-card {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .class-card h4 {
+            margin: 0 0 5px;
+            font-size: 1rem;
+        }
+        .class-card small {
+            opacity: 0.9;
+        }
+        .empty-slot {
+            color: var(--text-muted);
+            padding: 15px;
+            font-style: italic;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Teaching Schedule</h1>
+                    <p class="date">Your weekly class and subject assignments</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="timetable-grid">
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Day</th>
+                        <th>Class Assignments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day_id, day_name in days %}
+                    <tr>
+                        <td class="time-slot" style="background: var(--bg-color); font-weight: 700;">{{ day_name }}</td>
+                        <td style="display: flex; gap: 15px; flex-wrap: wrap; text-align: left; background: var(--card-bg); min-height: 100px;">
+                            {% for slot in timetable_data|get_item:day_id %}
+                            <div class="class-card" style="min-width: 220px; flex: 1; max-width: 300px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; opacity: 0.9; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                    <span><i class="fa fa-clock"></i> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                                </div>
+                                <h4>{{ slot.class_subject.subject.name }}</h4>
+                                <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">
+                                    <i class="fa fa-school"></i> {{ slot.class_subject.classroom.name }}
+                                </div>
+                                <div style="font-size: 0.8rem; opacity: 0.9;">
+                                    <i class="fa fa-layer-group"></i> {{ slot.class_subject.classroom.level.name }}
+                                </div>
+                                {% if slot.room_number %}
+                                <div style="font-size: 0.75rem; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); opacity: 0.8;">
+                                    <i class="fa fa-map-marker-alt"></i> Room: {{ slot.room_number }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="empty-slot">No teaching slots scheduled for {{ day_name }}</div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Smooth sidebar toggle for mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mobileBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (mobileBtn && sidebar) {
+                mobileBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

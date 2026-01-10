@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Notifications</h1>
+                    <p class="date">Stay updated with the latest alerts.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        <div style="max-width: 800px;">
+            {% for notification in notifications %}
+            <div class="notification-card {% if not notification.is_read %}unread{% endif %}" style="background-color: var(--card-bg)">
+                <div class="n-icon">
+                    <i class="fa fa-bell"></i>
+                </div>
+                <div class="n-content">
+                    <h4>{{ notification.title }}</h4>
+                    <p>{{ notification.body }}</p>
+                    <span class="n-time"><i class="fa fa-clock"></i> {{ notification.date|timesince }} ago</span>
+                </div>
+                <div>
+                     <a href="{% url 'school_admin_single_notification' notification.id %}" style="color: var(--text-muted); padding: 5px;"><i class="fa fa-chevron-right"></i></a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 50px; color: var(--text-muted);">
+                <i class="fa fa-check-circle" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <p>All caught up! No new notifications.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+</body>
+</html>

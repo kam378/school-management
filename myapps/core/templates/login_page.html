@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ global_settings.platform_name|default:"EduManage" }} - Sign In</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% include "favicon.html" %}
+    <style>
+        :root {
+            --primary-color: {{ school_settings.primary_color|default:"#4a90e2" }};
+            --secondary-color: {{ school_settings.secondary_color|default:"#2c3e50" }};
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .login-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Left side: Splash Image */
+        .splash-side {
+            flex: 1.2;
+            background: url("{% static 'images/login_splash.png' %}") no-repeat center center;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 60px;
+            color: white;
+            display: none; /* Hidden on mobile */
+        }
+
+        .splash-side::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%);
+        }
+
+        .splash-content {
+            position: relative;
+            z-index: 10;
+            max-width: 500px;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .splash-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .splash-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Right side: Login Form */
+        .form-side {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: #fff;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo-container {
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-container img {
+            max-height: 40px;
+        }
+
+        .logo-container h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--secondary-color);
+        }
+
+        .welcome-text {
+            margin-bottom: 30px;
+        }
+
+        .welcome-text h2 {
+            font-size: 1.8rem;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            transition: color 0.3s;
+        }
+
+        .form-control {
+            padding-left: 45px !important;
+            height: 50px;
+            background: #f9f9f9;
+        }
+
+        .form-control:focus + i {
+            color: var(--primary-color);
+        }
+
+        .alert-messages {
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            background: #fff0f0;
+            color: #dc3545;
+            border: 1px solid #ffdbdb;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (min-width: 992px) {
+            .splash-side {
+                display: flex;
+            }
+        }
+
+        .footer-text {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Left: Visual Side -->
+        <div class="splash-side">
+            <div class="splash-content">
+                <h2>Empowering the future of education</h2>
+                <p>Welcome to our integrated school management platform. Streamlining administration so you can focus on learning.</p>
+            </div>
+        </div>
+
+        <!-- Right: Login Side -->
+        <div class="form-side">
+            <div class="login-box">
+                <div class="logo-container">
+                    {% if global_settings.logo %}
+                        <img src="{{ global_settings.logo.url }}" alt="Logo">
+                    {% else %}
+                        <i class="fa fa-graduation-cap" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    {% endif %}
+                    <h1>{{ global_settings.platform_name|default:"EduManage" }}</h1>
+                </div>
+
+                <div class="welcome-text">
+                    <h2>Welcome Back</h2>
+                    <p>Enter your credentials to access your portal</p>
+                </div>
+
+                {% if messages %}
+                <div class="alert-messages">
+                    {% for message in messages %}
+                    <div class="alert">
+                        <i class="fa fa-circle-exclamation"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="username" class="form-control" placeholder="Enter your ID or username" required>
+                            <i class="fa fa-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                            <i class="fa fa-lock"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" style="margin-top: 10px;">
+                        Sign In to Portal
+                    </button>
+                </form>
+
+                <div class="footer-text">
+                    &copy; {% now "Y" %} {{ global_settings.platform_name|default:"EduManage" }}. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

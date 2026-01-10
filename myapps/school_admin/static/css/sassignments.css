@@ -1,0 +1,296 @@
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+/* Main Container */
+
+main{
+  /* width: 82%; */
+  height: 100%;
+  background-color: var(--background-color);
+  transition: all 1s;
+  overflow-y: hidden;
+}
+
+main .header{
+  width: 100%;
+  height: 8.5vh;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px ;
+}
+
+main .header h1{
+  font-family: "Inter-Light";
+  font-size: 20px;
+}
+
+main .header div{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+main .header button{
+  background-color: transparent;
+  border: none;
+  position: relative;
+}
+
+.notification-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.notification-icon:hover{
+  color: purple;
+}
+
+.settings-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.settings-icon:hover{
+  color: purple;
+}
+
+main .header button span{
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: red;
+  border-radius: 50%;
+  font-size: 15px;
+  color: white;
+}
+
+.assignment-container{
+  width: 100%;
+  height: 91.5vh;
+  display: flex;
+  justify-content: center;
+  overflow-y: scroll;
+}
+
+.assignments{
+  width: 90%;
+  box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.1);
+  background-color: var(--secondary-color);
+  height: fit-content;
+  margin: 20px 0px;
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.assignments .assignment-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.header-buttons button{
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.assignment-container nav{
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.assignments nav span{
+  text-decoration: none;
+  color: var(--nav-background-color);
+  font-family: "Inter-Bold";
+  cursor: pointer;
+}
+
+.assignments nav span li:hover{
+  color: #9333EA;
+}
+
+.assignments nav span li{
+  list-style-type: none;
+  padding: 10px;
+}
+
+.assignments nav .active{
+  border-bottom: 2px solid #9333EA;
+  color: #9333EA;
+}
+
+.assignments .sect{
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 30px 0px;
+}
+
+.assignments .active{
+  display: flex;
+}
+
+.assignments .active form{
+  width: 100%;
+  margin: 10px 0px;
+}
+
+.assignments .active .assignment-card{
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+
+.assignments .active .assignment-card:hover{
+  background-color: var(--background-color);
+}
+
+.assignment-card .sect-header{
+  width: 100%;
+  height: 8.5vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assignment-card .sect-header h3{
+  font-size: 15px;
+  font-family: "Inter-Light";
+}
+
+.assignment-card .sect-header .Pending{
+  padding: 5px 10px;
+  color: #854d0e;
+  background-color: #fef9c3;
+  border-radius: 20px;
+}
+
+.assignment-card .sect-header .Submitted{
+  padding: 5px 10px;
+  color: #0e8518;
+  background-color: #c3fec6;
+  border-radius: 20px;
+}
+
+.assignment-card small{
+  width: 100%;
+  display: inline-block;
+  color: var(--secondary-text-color);
+}
+
+.assignment-card .info{
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0px;
+}
+
+.sect-footer{
+  width: 100%;
+  padding: 20px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sect-footer a small{
+  color: #9333EA;
+}
+
+.sect-footer button{
+  background-color: #9333EA;
+  padding: 12px 23px;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Single Assignment Page */
+
+.back-icon, .back-icon *{
+  display: none;
+}
+
+.assignment{
+  width: 90%;
+  box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.1);
+  background-color: var(--secondary-color);
+  height: fit-content;
+  margin: 20px 0px;
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.assignment .desc{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.assignment .desc p{
+  margin: 20px 0px;
+}
+
+.assignment .desc span{
+  margin: 10px 5px ;
+  border: 1px solid var(--border-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--secondary-text-color);
+}
+
+.assignment .desc span:hover{
+  background-color: var(--background-color);
+  border: 1px solid var(--secondary-text-color);
+  color: var(--secondary-text-color);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+@media (max-width: 1000px) {  
+
+  .assignment-container{
+    padding-bottom: 20vh;
+  }
+
+  .back-icon, .back-icon *{
+    display: flex;
+    color: var(--text-color);
+  }
+  
+  main .header{
+    padding: 30px 20px;
+    /* display: none; */
+  }
+
+}

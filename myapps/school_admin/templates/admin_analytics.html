@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% include "favicon.html" %}
+  <title>Analytics - EduManage</title>
+  <!-- Premium Theme -->
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+      /* Analytics specific chart containers */
+      .charts-container {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 25px;
+          margin-bottom: 25px;
+      }
+      /* Inherit card styles from theme.css but add specific chart sizes */
+      .chart-card {
+          background: var(--card-bg);
+          padding: 25px;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px var(--shadow-color);
+          min-height: 400px;
+      }
+      .chart-card h3 {
+          margin-bottom: 20px;
+          color: var(--text-color);
+      }
+      @media (max-width: 900px) {
+          .charts-container { grid-template-columns: 1fr; }
+      }
+  </style>
+</head>
+<body>
+    
+    {% include "admin_aside.html" %}
+    
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Analytics Overview</h1>
+                    <p class="date">Deep insights into your school's data.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+        
+        <!-- Key Metrics Cards -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-icon" style="background: #e3f2fd; color: #1565c0;">
+                    <i class="fa fa-user-graduate"></i>
+                </div>
+                <h3>Total Students</h3>
+                <p class="value">{{ num_students }}</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon" style="background: #e8f5e9; color: #2e7d32;">
+                    <i class="fa fa-chalkboard-teacher"></i>
+                </div>
+                <h3>Active Teachers</h3>
+                <p class="value">{{ num_teachers }}</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon" style="background: #fff3e0; color: #ef6c00;">
+                    <i class="fa fa-users"></i>
+                </div>
+                <h3>Parent Accounts</h3>
+                <p class="value">{{ num_parents }}</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon" style="background: #f3e5f5; color: #7b1fa2;">
+                    <i class="fa fa-chart-line"></i>
+                </div>
+                <h3>Attendance Rate</h3>
+                <p class="value">{{ attendance_rate }}%</p>
+            </div>
+        </div>
+
+        <!-- Charts Area -->
+        <div class="charts-container">
+            <div class="chart-card">
+                 <h3 style="color: #666; font-size: 1.1rem;">Revenue & Growth (Mock)</h3>
+                 <div id="revenueChart"></div>
+            </div>
+            <div class="chart-card">
+                 <h3 style="color: #666; font-size: 1.1rem;">User Distribution</h3>
+                 <div id="userPieChart"></div>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+             <h3 style="color: #666; font-size: 1.1rem;">Attendance Trends (Mock)</h3>
+             <div id="attendanceChart"></div>
+        </div>
+
+    </main>
+
+  <script>
+    // User Distribution Chart
+    var optionsPie = {
+      series: [{{ num_students }}, {{ num_teachers }}, {{ num_parents }}],
+      chart: { type: 'donut', height: 350, fontFamily: 'Segoe UI, sans-serif' },
+      labels: ['Students', 'Teachers', 'Parents'],
+      colors: ['#3498db', '#2ecc71', '#f1c40f'],
+      plotOptions: {
+        pie: { donut: { size: '65%' } }
+      },
+      dataLabels: { enabled: false }
+    };
+    new ApexCharts(document.querySelector("#userPieChart"), optionsPie).render();
+
+    // Attendance Chart (Mock)
+    var optionsBar = {
+      series: [{ name: 'Attendance', data: [95, 92, 88, 94, 91] }],
+      chart: { type: 'bar', height: 350, fontFamily: 'Segoe UI, sans-serif', toolbar: { show: false } },
+      xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+      colors: ['#9b59b6'],
+      plotOptions: { bar: { borderRadius: 5 } }
+    };
+    new ApexCharts(document.querySelector("#attendanceChart"), optionsBar).render();
+
+    // Revenue Chart (Mock)
+    var optionsLine = {
+        series: [{ name: "Revenue", data: [1200, 1900, 3000, 5000, 2000, 3000] }],
+        chart: {
+            height: 350,
+            type: 'area', /* Area looks more premium than line */
+            zoom: { enabled: false },
+            fontFamily: 'Segoe UI, sans-serif',
+            toolbar: { show: false }
+        },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2 },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.9,
+                stops: [0, 90, 100]
+            }
+        },
+        xaxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        },
+        colors: ['#4a90e2']
+    };
+    new ApexCharts(document.querySelector("#revenueChart"), optionsLine).render();
+  </script>
+</body>
+</html>

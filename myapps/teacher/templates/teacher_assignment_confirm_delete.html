@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Assignment - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <a href="{% url 'teacher_assignments' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <i class="fa fa-arrow-left"></i> Back to Assignments
+                </a>
+                <h1>Delete Assignment</h1>
+                <p class="date">Confirm deletion of this assignment.</p>
+            </div>
+        </div>
+
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; padding: 20px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fa fa-exclamation-triangle" style="font-size: 2.5rem; color: #e74c3c;"></i>
+                </div>
+                
+                <h2 style="color: var(--text-color); margin-bottom: 10px;">Are you sure?</h2>
+                <p style="color: var(--text-muted); margin-bottom: 30px;">
+                    This will permanently delete the assignment and all associated grades.
+                </p>
+
+                <div style="background: rgba(231, 76, 60, 0.05); padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: left;">
+                    <div style="display: grid; gap: 10px;">
+                        <div>
+                            <strong>Assignment:</strong> {{ assignment.title }}
+                        </div>
+                        <div>
+                            <strong>Class:</strong> {{ assignment.class_subject.subject.name }} - {{ assignment.class_subject.classroom.name }}
+                        </div>
+                        <div>
+                            <strong>Max Score:</strong> {{ assignment.max_score }}
+                        </div>
+                        <div>
+                            <strong>Due Date:</strong> {{ assignment.due_date|date:"F d, Y" }}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" style="display: flex; gap: 15px; justify-content: center;">
+                    {% csrf_token %}
+                    <a href="{% url 'teacher_assignments' %}" class="btn-module" style="background: #95a5a6; margin: 0;">
+                        <i class="fa fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-module" style="background: #e74c3c; margin: 0;">
+                        <i class="fa fa-trash"></i> Yes, Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

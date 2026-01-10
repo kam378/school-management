@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EduManage</title>
+    {% include "favicon.html" %}
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Premium Theme -->
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body>
+
+    <!-- Sidebar is now self-contained with styles -->
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <p class="date">Overview of school performance.</p>
+                </div>
+            </div>
+            <!-- Extra buttons/actions could go here -->
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-icon" style="background: #e3f2fd; color: #2196f3;">
+                    <i class="fa fa-users"></i>
+                </div>
+                <h3>Total Users</h3>
+                <p class="value">{{ total_users|default:"--" }}</p>
+                <!-- We can try to sum up contexts if available, or just show placeholders if context isn't passed ideally. 
+                     From previous view code: num_admins, num_students, num_teachers, num_parents.
+                     Let's use a quick calculation or just individual cards. 
+                     The design supports multiple cards. Let's list them.
+                -->
+            </div>
+            
+            <div class="card">
+                <div class="card-icon" style="background: #e8f5e9; color: #4caf50;">
+                    <i class="fa fa-user-graduate"></i>
+                </div>
+                <h3>Students</h3>
+                <p class="value">{{ num_students|default:"0" }}</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" style="background: #fff3e0; color: #ff9800;">
+                     <i class="fa fa-chalkboard-teacher"></i>
+                </div>
+                <h3>Teachers</h3>
+                <p class="value">{{ num_teachers|default:"0" }}</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" style="background: #f3e5f5; color: #9c27b0;">
+                    <i class="fa fa-chart-line"></i>
+                </div>
+                <h3>Attendance</h3>
+                <p class="value">94.7%</p> <!-- Mock data for now -->
+            </div>
+        </div>
+
+        <!-- Quick Actions / Modules -->
+        <h2 style="margin-bottom: 25px; color: var(--secondary-color);">Quick Actions</h2>
+        <div class="modules-grid">
+            
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #FF6B6B 0%, #556270 100%);">
+                     <i class="fa fa-user-plus"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Manage Users</h3>
+                    <p>Add students, teachers, and staff to your school system.</p>
+                    <a href="{% url 'school_admin_manage_users' %}" class="btn-module">Manage</a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                     <i class="fa fa-bullhorn"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Announcements</h3>
+                    <p>Broadcast messages to the entire school or specific groups.</p>
+                    <a href="{% url 'school_admin_announcements' %}" class="btn-module">Post New</a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #f2709c 0%, #ff9472 100%);">
+                     <i class="fa fa-gear"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Settings</h3>
+                    <p>Configure feature toggles, school info, and system preferences.</p>
+                    <a href="{% url 'school_admin_settings' %}" class="btn-module">Configure</a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

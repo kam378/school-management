@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Error (500)</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f8d7da; color: #721c24; }
+        h1 { font-size: 2em; }
+        p { font-size: 1.2em; }
+        .details { margin-top: 20px; padding: 10px; background: #fff; border: 1px solid #f5c6cb; border-radius: 5px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>Oops! Something went wrong.</h1>
+    <p>We encountered an error while processing your request.</p>
+    {% if message %}
+    <div class="details">
+        <strong>Error Details:</strong><br>
+        {{ message }}
+    </div>
+    {% endif %}
+</body>
+</html>

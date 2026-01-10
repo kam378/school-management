@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard & Live Class - {{ room.subject }}</title>
+    
+    <!-- Agora RTC SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.23.1.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; }
+        #whiteboard-container { width: 100%; height: 100vh; background-color: #f1f2f3; position: absolute; top: 0; left: 0; z-index: 1; }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2rem; color: #555; z-index: 999; }
+
+        /* Draggable Video Widget */
+        #video-widget {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 240px;
+            background: #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget-header {
+            padding: 8px 12px;
+            background: #34495e;
+            color: white;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        
+        .widget-body {
+            background: #000;
+            min-height: 180px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-placeholder { color: #7f8c8d; font-size: 0.8rem; }
+
+        .widget-controls {
+            padding: 10px;
+            background: #2c3e50;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-control {
+            width: 36px; height: 36px; border-radius: 50%; border: none;
+            background: #e74c3c; color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        .btn-control.active { background: #2ecc71; }
+        
+        #local-player, #remote-player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading Class...</div>
+    <div id="whiteboard-container"></div>
+
+    <!-- Video Widget -->
+    <div id="video-widget">
+        <div class="widget-header" id="drag-handle">
+            <span>Live Class</span>
+            <span style="font-size:0.7rem; opacity:0.8;">{{ user.role|title }}</span>
+        </div>
+        <div class="widget-body">
+            {% if is_writable %}
+                <div id="local-player"></div>
+            {% else %}
+                <div id="remote-player"></div>
+                <div class="video-placeholder" id="placeholder-text">Waiting for teacher...</div>
+            {% endif %}
+        </div>
+        
+        {% if is_writable %}
+        <div class="widget-controls">
+            <button class="btn-control active" id="btn-mic" title="Toggle Mic">🎤</button>
+            <button class="btn-control active" id="btn-cam" title="Toggle Camera">📷</button>
+        </div>
+        {% else %}
+        <div class="widget-controls" style="justify-content: center; color: white; font-size: 0.8rem;">
+            <span>Watching Live</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <script type="module">
+        import { createFastboard, createUI } from "https://esm.sh/@netless/fastboard@1.1.1/full?bundle";
+        const CONTAINER_ID = "whiteboard-container";
+        const NETLESS_APP_ID = "{{ NETLESS_APP_ID }}"; 
+        const WB_UUID = "{{ room.room_uuid }}";
+        const WB_TOKEN = "{{ room_token }}"; 
+        const USER_ID = "{{ user.username }}";
+        const IS_WRITABLE = {{ is_writable|yesno:"true,false" }};
+        
+        async function mountFastboard(div) {
+            try {
+                let fastboard = await createFastboard({
+                    sdkConfig: { appIdentifier: NETLESS_APP_ID, region: "sg" },
+                    joinRoom: { uid: USER_ID, uuid: WB_UUID, roomToken: WB_TOKEN, isWritable: IS_WRITABLE },
+                    managerConfig: { cursor: true },
+                });
+                window.fastboardApp = fastboard; 
+                createUI(fastboard, div);
+                document.getElementById("loading").style.display = "none";
+            } catch (err) { alert("Failed to load whiteboard: " + err.message); }
+        }
+        mountFastboard(document.getElementById(CONTAINER_ID));
+    </script>
+    
+    <script>
+        const RTC_APP_ID = "{{ AGORA_APP_ID }}";
+        const RTC_TOKEN = "{{ rtc_token }}";
+        const RTC_CHANNEL = "{{ room.room_uuid }}";
+        const RTC_UID = parseInt("{{ rtc_uid }}");
+        const IS_TEACHER = {{ is_writable|yesno:"true,false" }};
+        
+        let rtcClient;
+        let localTracks = { audio: null, video: null };
+        let tracksStatus = { audio: true, video: true };
+
+        async function startVideoCall() {
+            console.log("Initializing RTC | App ID:", RTC_APP_ID, "| Channel:", RTC_CHANNEL, "| UID:", RTC_UID);
+            
+            rtcClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+            
+            rtcClient.on("user-published", async (user, mediaType) => {
+                console.log("Remote user published:", user.uid, mediaType);
+                await rtcClient.subscribe(user, mediaType);
+                if (mediaType === "video" && !IS_TEACHER) {
+                    user.videoTrack.play("remote-player");
+                    document.getElementById("placeholder-text").style.display = "none";
+                }
+                if (mediaType === "audio") user.audioTrack.play();
+            });
+            
+            rtcClient.on("user-unpublished", (user) => {
+                console.log("Remote user unpublished:", user.uid);
+                if (!IS_TEACHER) document.getElementById("placeholder-text").style.display = "block";
+            });
+
+            try {
+                if (!RTC_APP_ID || RTC_APP_ID.length < 10) {
+                    throw new Error("Invalid AGORA_APP_ID. Please update your .env file.");
+                }
+                
+                await rtcClient.join(RTC_APP_ID, RTC_CHANNEL, RTC_TOKEN, RTC_UID);
+                console.log("Successfully joined RTC channel as UID:", RTC_UID);
+                
+                if (IS_TEACHER) {
+                    // Using the combined method for better compatibility as per guide
+                    const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                    localTracks.audio = audioTrack;
+                    localTracks.video = videoTrack;
+                    
+                    localTracks.video.play("local-player");
+                    await rtcClient.publish([localTracks.audio, localTracks.video]);
+                    console.log("Teacher tracks started and published!");
+                }
+            } catch (e) { 
+                console.error("RTC Error:", e);
+                if (e.message.includes("invalid vendor key")) {
+                    alert("Agora Security Error: Invalid Vendor Key (AppID mismatch). Please verify AppID and Certificate in .env.");
+                } else if (!IS_TEACHER && e.message.includes("not initialized")) {
+                    // Silently ignore student side track initialization errors if any
+                } else {
+                    alert("Video Error: " + (e.reason || e.message));
+                }
+            }
+        }
+
+        if (IS_TEACHER) {
+            document.getElementById("btn-mic").onclick = async () => {
+                if (!localTracks.audio) return console.warn("Audio track not initialized");
+                tracksStatus.audio = !tracksStatus.audio;
+                await localTracks.audio.setEnabled(tracksStatus.audio);
+                document.getElementById("btn-mic").classList.toggle("active", tracksStatus.audio);
+                document.getElementById("btn-mic").innerText = tracksStatus.audio ? "🎤" : "🔇";
+            };
+            document.getElementById("btn-cam").onclick = async () => {
+                if (!localTracks.video) return console.warn("Video track not initialized");
+                tracksStatus.video = !tracksStatus.video;
+                await localTracks.video.setEnabled(tracksStatus.video);
+                document.getElementById("btn-cam").classList.toggle("active", tracksStatus.video);
+            };
+        }
+
+        // Draggable Logic
+        const widget = document.getElementById("video-widget");
+        const handle = document.getElementById("drag-handle");
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+        handle.onmousedown = (e) => {
+            isDragging = true;
+            offset.x = e.clientX - widget.offsetLeft;
+            offset.y = e.clientY - widget.offsetTop;
+            widget.style.cursor = 'grabbing';
+        };
+        document.onmousemove = (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                widget.style.left = (e.clientX - offset.x) + 'px';
+                widget.style.top = (e.clientY - offset.y) + 'px';
+                widget.style.right = 'auto'; 
+            }
+        };
+        document.onmouseup = () => { isDragging = false; widget.style.cursor = 'default'; };
+
+        startVideoCall();
+    </script>
+</body>
+</html>

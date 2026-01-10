@@ -1,0 +1,283 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - EduManage</title>
+  {% include "favicon.html" %}
+  <!-- Premium Theme -->
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+      /* Settings specific styles reusing theme vars */
+      .settings-card {
+          background: var(--card-bg);
+          border-radius: 12px;
+          box-shadow: 0 4px 15px var(--shadow-color);
+          display: flex;
+          overflow: hidden;
+          min-height: 600px;
+      }
+      .settings-sidebar {
+          width: 250px;
+          background: var(--bg-color);
+          border-right: 1px solid var(--border-color);
+          padding: 20px 0;
+      }
+      .settings-nav-item {
+          padding: 15px 25px;
+          cursor: pointer;
+          color: var(--text-muted);
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: 0.2s;
+      }
+      .settings-nav-item:hover {
+          background: var(--border-color);
+          color: var(--primary-color);
+      }
+      .settings-nav-item.active {
+          background: var(--bg-color);
+          color: var(--primary-color);
+          border-right: 3px solid var(--primary-color);
+      }
+      .settings-content-area {
+          flex: 1;
+          padding: 40px;
+          overflow-y: auto;
+          background: var(--card-bg);
+      }
+      .form-group { margin-bottom: 20px; }
+      .form-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); }
+      .form-control {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          font-family: inherit;
+          font-size: 1rem;
+          transition: 0.2s;
+          background: var(--bg-color);
+          color: var(--text-color);
+      }
+      .form-control:focus {
+          border-color: var(--primary-color);
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+          background: var(--card-bg);
+      }
+      .btn-save {
+          background: var(--primary-color);
+          color: white;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: 0.2s;
+          margin-top: 20px;
+      }
+      .btn-save:hover { background: #357abd; }
+      
+      /* Toggle Switch */
+      .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+      .toggle-switch input { opacity: 0; width: 0; height: 0; }
+      .slider {
+          position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+          background-color: #ccc; transition: .4s; border-radius: 34px;
+      }
+      .slider:before {
+          position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+          background-color: white; transition: .4s; border-radius: 50%;
+      }
+      input:checked + .slider { background-color: var(--primary-color); }
+      input:checked + .slider:before { transform: translateX(24px); }
+      
+      .settings-section { display: none; }
+      .settings-section.active { display: block; animation: fadeIn 0.3s; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      
+      @media (max-width: 800px) {
+          .settings-card { flex-direction: column; }
+          .settings-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); display: flex; overflow-x: auto; }
+          .settings-nav-item { white-space: nowrap; border-right: none; border-bottom: 3px solid transparent; }
+          .settings-nav-item.active { border-right: none; border-bottom-color: var(--primary-color); }
+      }
+  </style>
+</head>
+<body>
+    
+    {% include "admin_aside.html" %}
+    
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Settings</h1>
+                    <p class="date">Configure your school preferences.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+        
+        <div class="settings-card">
+            <!-- Sidebar -->
+            <div class="settings-sidebar">
+                <div class="settings-nav-item active" onclick="showTab('general')"><i class="fa fa-cog"></i> &nbsp; General Info</div>
+                <div class="settings-nav-item" onclick="showTab('features')"><i class="fa fa-layer-group"></i> &nbsp; Features</div>
+                <div class="settings-nav-item" onclick="showTab('security')"><i class="fa fa-lock"></i> &nbsp; Security</div>
+            </div>
+            
+            <!-- Content -->
+            <div class="settings-content-area">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #e3f2fd; color: #0d47a1; border-left: 5px solid #1565c0;">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- General Tab -->
+                    <div id="general" class="settings-section active">
+                    <h2 style="margin-top:0; color: var(--text-color);">General Information</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 25px;">Update your school's basic details.</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">School Name</label>
+                            <input type="text" name="school_name" class="form-control" value="{{ form.school_name.value|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <textarea name="address" class="form-control" rows="3">{{ form.address.value|default:'' }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}">
+                        </div>
+                         <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}">
+                        </div>
+                         <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}">
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; align-items: center; margin-top: 20px; padding: 20px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color);">
+                             <div class="form-group" style="margin-bottom:0; text-align: center;">
+                                <label class="form-label">Primary Color</label>
+                                {{ form.primary_color }}
+                            </div>
+                            <div class="form-group" style="margin-bottom:0; text-align: center;">
+                                <label class="form-label">Secondary Color</label>
+                                {{ form.secondary_color }}
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">
+                                Select your school's brand colors. The dashboard will update immediately after saving.
+                            </div>
+                        </div>
+
+                        <div class="card" style="flex-direction: row; align-items: center; margin-top: 20px; box-shadow: none; border: 1px solid var(--border-color); padding: 20px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin:0 0 5px;">Dark Mode</h4>
+                                <p style="margin:0; color: var(--text-muted); font-size: 0.9rem;">Switch to a dark theme for reduced eye strain.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="is_dark_mode" {% if form.is_dark_mode.value %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                         {% comment %} <div class="form-group">
+                            <label class="form-label" style="opacity: 0.5;">Theme</label>
+                            <select class="form-control" disabled style="background: #eee; cursor: not-allowed;">
+                                <option>Light Mode (Default)</option>
+                            </select>
+                        </div> {% endcomment %}
+                        <button type="submit" class="btn-save">Save Changes</button>
+                    </div>
+                    
+                    <!-- Features Tab -->
+                    <div id="features" class="settings-section">
+                        <h2 style="margin-top:0; color: var(--text-color);">Feature Toggles</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 25px;">Enable or disable system modules.</p>
+                        
+                        <div class="card" style="flex-direction: row; align-items: center; margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border-color);">
+                            <div style="flex: 1;">
+                                <h4 style="margin:0 0 5px; color: var(--text-color);">Virtual Whiteboard</h4>
+                                <p style="margin:0; color: var(--text-muted); font-size: 0.9rem;">Allow teachers and students to collaborate visually.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="enable_whiteboard" {% if form.enable_whiteboard.value %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="card" style="flex-direction: row; align-items: center; margin-bottom: 20px; box-shadow: none; border: 1px solid var(--border-color);">
+                            <div style="flex: 1;">
+                                <h4 style="margin:0 0 5px; color: var(--text-color);">Chat System</h4>
+                                <p style="margin:0; color: var(--text-muted); font-size: 0.9rem;">Enable real-time messaging between users.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="enable_chat" {% if form.enable_chat.value %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-save">Save Features</button>
+                    </div>
+                    
+                    <!-- Security Tab -->
+                    <div id="security" class="settings-section">
+                        <h2 style="margin-top:0; color: var(--text-color);">Security</h2>
+                         <div class="card" style="box-shadow: none; border: 1px solid var(--border-color); text-align: center; padding: 50px;">
+                            <i class="fa fa-shield-alt" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+                            <h3 style="color: var(--text-color);">Secure by Default</h3>
+                            <p style="color: var(--text-muted);">We handle encryption and security automatically. <br>To change your password, please visit your User Profile.</p>
+                         </div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+        
+    </main>
+
+  <script>
+      function showTab(tabId) {
+          // Hide all sections
+          document.querySelectorAll('.settings-section').forEach(el => el.classList.remove('active'));
+          // Deactivate all nav items
+          document.querySelectorAll('.settings-nav-item').forEach(el => el.classList.remove('active'));
+          
+          // Show target
+          document.getElementById(tabId).classList.add('active');
+          // Activate nav item (simple query based on text content or index would be brittle, let's use event target or verify via click)
+          // Actually, let's just use the onclick styling in a smarter way if needed, but for now loop:
+          // We can't easily identify the specific nav item without ID or reference.
+          // Let's assume the user clicked and we can match by index? No.
+          // Quick fix: Add IDs to nav items? Or just toggle class on 'event.currentTarget' passed to function?
+      }
+      
+      // Update showTab to handle "active" class on nav items
+      const navItems = document.querySelectorAll('.settings-nav-item');
+      navItems.forEach(item => {
+          item.addEventListener('click', function() {
+              navItems.forEach(n => n.classList.remove('active'));
+              this.classList.add('active');
+          });
+      });
+  </script>
+</body>
+</html>

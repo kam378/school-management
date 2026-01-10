@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Attendance Management</h1>
+                    <p class="date">Record and track student presence.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card" style="margin-bottom: 30px;">
+            <form method="get" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Select Classroom</label>
+                    <select name="classroom" class="form-control" required>
+                        <option value="">-- Choose Classroom --</option>
+                        {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}" {% if classroom.id == selected_classroom_id %}selected{% endif %}>{{ classroom.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ selected_date }}" required>
+                </div>
+                <button type="submit" class="btn-add" style="height: 45px; background: var(--secondary-color); color: #fff;">
+                    <i class="fa fa-search"></i> Load Students
+                </button>
+            </form>
+        </div>
+
+        {% if selected_classroom_id %}
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+                <h3 style="margin: 0;">Marking List: {{ selected_date }}</h3>
+                <span class="status-badge status-active">{{ students|length }} Students</span>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="classroom_id" value="{{ selected_classroom_id }}">
+                <input type="hidden" name="attendance_date" value="{{ selected_date }}">
+                
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>ID</th>
+                            <th style="text-align: center;">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td data-label="Student">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                                        {{ student.first_name|first }}
+                                    </div>
+                                    <span style="font-weight: 600;">{{ student.get_full_name }}</span>
+                                </div>
+                            </td>
+                            <td data-label="ID">{{ student.custom_id }}</td>
+                            <td style="text-align: center;" data-label="Status">
+                                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem;">
+                                        <input type="radio" name="status_{{ student.id }}" value="present" {% if student.current_status == 'present' %}checked{% endif %}>
+                                        Present
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #e74c3c;">
+                                        <input type="radio" name="status_{{ student.id }}" value="absent" {% if student.current_status == 'absent' %}checked{% endif %}>
+                                        Absent
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #f39c12;">
+                                        <input type="radio" name="status_{{ student.id }}" value="late" {% if student.current_status == 'late' %}checked{% endif %}>
+                                        Late
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #7f8c8d;">
+                                        <input type="radio" name="status_{{ student.id }}" value="excused" {% if student.current_status == 'excused' %}checked{% endif %}>
+                                        Excused
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="fa fa-users-slash" style="font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
+                                No students currently assigned to this classroom.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div style="padding: 20px; background: #fdfdfd; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn-submit" style="width: auto; padding: 12px 30px;">
+                        <i class="fa fa-save"></i> Save Attendance Records
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 100px 20px; background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color);">
+            <i class="fa fa-calendar-check" style="font-size: 4rem; color: #eee; margin-bottom: 20px;"></i>
+            <h3 style="color: var(--text-muted);">Select a classroom and date to mark attendance</h3>
+            <p style="color: #999;">Daily attendance helps in monitoring student consistency and academic engagement.</p>
+        </div>
+        {% endif %}
+    </main>
+
+</body>
+</html>

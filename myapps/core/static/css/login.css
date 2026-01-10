@@ -1,0 +1,141 @@
+:root{
+  --first-background-color: #5749E2;
+  --second-background-color: #7B58D7;
+  --secondary-color: #FFFFFF;
+  --text-color: #000000;
+  --secondary-text-color: #00000069;
+  --border-color: #0000001e;
+}
+
+@font-face {
+  font-family: Inter-black;
+  src: url(/static/assets/fonts/Inter/Inter/Inter_18pt-Black.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-bold;
+  src: url(/static/assets/fonts/Inter/Inter/Inter_18pt-Bold.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Semi-Bold;
+  src: url(/static/assets/fonts/Inter/Inter/Inter_18pt-SemiBold.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Regular;
+  src: url(/static/assets/fonts/Inter/Inter/Inter_18pt-Regular.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Inter-Light;
+  src: url(/static/assets/fonts/Inter/Inter/Inter_18pt-Light.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter-Regular";
+}
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, var(--first-background-color), var(--second-background-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form{
+  width: 35%;
+  height: auto;
+  background-color: var(--secondary-color);
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.intro_text{
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin: 40px 0px;
+}
+
+.intro_text div{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro_text div p{
+  color: var(--secondary-text-color);
+}
+
+form p{
+  font-family: "Inter-Light";
+  margin: 0px 0px 20px 0px;
+}
+
+#user_status{
+  width: 100%;
+  height: 6vh;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  margin: 0px 0px 20px 0px;
+  outline: none;
+}
+
+form input{
+  width: 100%;
+  height: 6vh;
+  margin: 0px 0px 20px 0px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  outline: none;
+}
+
+form button{
+  width: 100%;
+  height: 6vh;
+  border-radius: 5px;
+  border: none;
+  background: linear-gradient(to right, var(--first-background-color), var(--second-background-color));
+  color: var(--secondary-color);
+}
+
+form a{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0px;
+  text-decoration: none;
+  color: var(--second-background-color);
+}
+
+@media (max-width: 884px) {
+  .form{
+    width: 90%;
+  }
+}

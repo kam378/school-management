@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>My Profile</h1>
+                    <p class="date">Manage your account information</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="max-width: 800px;">
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                <div class="badge" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; background: {% if message.tags == 'success' %}rgba(46, 204, 113, 0.1){% else %}rgba(231, 76, 60, 0.1){% endif %}; color: {% if message.tags == 'success' %}#2ecc71{% else %}#e74c3c{% endif %}; border: 1px solid currentColor;">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Personal Information -->
+            <div class="form-card">
+                <h3 style="margin-top: 0; color: var(--text-color);">Personal Information</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        {{ profile_form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        {{ profile_form.last_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        {{ profile_form.email }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        {{ profile_form.phone_number }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        {{ profile_form.birth_date }}
+                    </div>
+                    <button type="submit" name="update_profile" class="btn-module" style="background: var(--primary-color); color: white; border: none; cursor: pointer;">
+                        <i class="fa fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Change Password -->
+            <div class="form-card" style="margin-top: 30px;">
+                <h3 style="margin-top: 0; color: var(--text-color);">Change Password</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    {% for field in password_form %}
+                    <div class="form-group">
+                        <label class="form-label">{{ field.label }}</label>
+                        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}">
+                        {% if field.errors %}
+                        <small style="color: #e74c3c;">{{ field.errors.as_text }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" name="change_password" class="btn-module" style="background: var(--secondary-color); color: white; border: none; cursor: pointer;">
+                        <i class="fa fa-key"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+
+    </main>
+
+</body>
+</html>

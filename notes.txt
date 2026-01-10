@@ -1,0 +1,45 @@
+  Super Admin application
+  |
+  Where we add tenants manage tenants, users and global settings across all schools
+  
+  Core applications
+  |
+  Main application
+  
+  accounts application
+  |
+  Custom User Model
+  fields - Roles - (admin, teacher, student, or parent)
+
+  teacher application extend Custom User Model
+  |
+  Contain all the functions of the teacher
+
+  student application extend Custom User Model
+  |
+  Contain all the functions of the student
+
+  admin application extend Custom User Model
+  |
+  Contains all the functions of the admin
+
+  parent application extend Custom User Model
+  |
+  Contains all the functions of the parent
+
+  Chat Sytem application
+  |
+  Contains the functions of the chat system
+
+  Whiteboard
+  |
+  Contains the Whiteboard functions
+  
+  Attendances 
+  |
+  Contains the functions for our clocking devices and Attendances
+  models for clocking teachers, and
+
+1- setting up our applications.
+2- setting up asgi server.
+

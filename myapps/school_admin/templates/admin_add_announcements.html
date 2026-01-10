@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Announcement - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>New Announcement</h1>
+                    <p class="date">Share news with the entire school.</p>
+                </div>
+            </div>
+            <a href="{% url 'school_admin_announcements' %}" class="btn-module" style="background: #eee; color: #333; margin-top:0;">
+                <i class="fa fa-arrow-left"></i> Cancel
+            </a>
+        </div>
+
+        <div class="form-card">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. End of Term Exams" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Author Name</label>
+                    <input type="text" name="author" class="form-control" value="{{ request.user.get_full_name|default:request.user.username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Message Body</label>
+                    <textarea name="body" class="form-control" placeholder="Write your announcement here..." rows="6" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="fa fa-paper-plane"></i> Post Announcement
+                </button>
+            </form>
+        </div>
+
+    </main>
+</body>
+</html>

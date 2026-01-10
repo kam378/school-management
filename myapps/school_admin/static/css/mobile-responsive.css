@@ -1,0 +1,114 @@
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1000;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+    
+    .header-bar {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start !important;
+    }
+    
+    .header-bar > div:first-child {
+        width: 100%;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Mobile-friendly tables */
+    .premium-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .premium-table thead {
+        display: none;
+    }
+    
+    .premium-table tbody {
+        display: block;
+    }
+    
+    .premium-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        background: var(--card-bg);
+    }
+    
+    .premium-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .premium-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .premium-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-right: 10px;
+    }
+    
+    /* Card grids */
+    .card-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Form cards */
+    .form-card {
+        padding: 20px;
+    }
+    
+    /* Detail cards */
+    .detail-card {
+        padding: 20px;
+    }
+    
+    /* Buttons */
+    .btn-add, .btn-module {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Hide on mobile */
+    .mobile-hide {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 15px;
+    }
+    
+    .header-bar h1 {
+        font-size: 1.5rem;
+    }
+    
+    .value {
+        font-size: 1.8rem;
+    }
+}

@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Student Dashboard</h1>
+                    <p class="date">Welcome back, {{ request.user.first_name }}!</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="icon-btn">
+                    <i class="fa fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="card">
+                <i class="fa fa-school" style="font-size: 2rem; color: var(--primary-color);"></i>
+                <div>
+                    <h3>Current Class</h3>
+                    <p class="value">{{ classroom.name|default:"Not Enrolled" }}</p>
+                    <small style="color: var(--text-muted);">{{ classroom.level.name }}</small>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fa fa-tasks" style="font-size: 2rem; color: #e74c3c;"></i>
+                <div>
+                    <h3>Upcoming Assignments</h3>
+                    <p class="value">{{ upcoming_assignments.count }}</p>
+                    <small style="color: var(--text-muted);">Action required</small>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fa fa-chart-line" style="font-size: 2rem; color: #2ecc71;"></i>
+                <div>
+                    <h3>Academic Average</h3>
+                    <p class="value">{{ average_grade }}%</p>
+                    <small style="color: var(--text-muted);">Tracked Performance</small>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Recent Content -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-top: 30px;">
+            <!-- Recent Announcements -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Recent Announcements</h3>
+                    <a href="{% url 'student_announcements' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View All →</a>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for announcement in announcements|slice:":2" %}
+                    <div style="padding: 15px; background: var(--bg-color); border-radius: 8px; border-left: 3px solid var(--primary-color);">
+                        <h4 style="margin: 0 0 5px; color: var(--text-color);">{{ announcement.title }}</h4>
+                        <p style="margin: 0 0 10px; color: var(--text-muted); font-size: 0.9rem;">{{ announcement.body|truncatechars:100 }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+                            <span><i class="fa fa-calendar"></i> {{ announcement.date|date:"M d, Y" }}</span>
+                            <span><i class="fa fa-user"></i> {{ announcement.author }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="text-align: center; color: var(--text-muted); padding: 20px;">No announcements yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Assignments -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Upcoming Assignments</h3>
+                    <a href="{% url 'student_assignments' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View All →</a>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for assignment in upcoming_assignments %}
+                    <div style="padding: 15px; background: var(--bg-color); border-radius: 8px; border-left: 3px solid #e74c3c;">
+                        <h4 style="margin: 0 0 5px; color: var(--text-color);">{{ assignment.title }}</h4>
+                        <p style="margin: 0 0 10px; color: var(--text-muted); font-size: 0.85rem;">
+                            <i class="fa fa-book"></i> {{ assignment.class_subject.subject.name }} | 
+                            <i class="fa fa-clock"></i> Due: {{ assignment.due_date|date:"M d, Y" }}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">Action Required</span>
+                            <a href="{% url 'student_assignments' %}" style="color: var(--primary-color); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Details →</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="text-align: center; color: var(--text-muted); padding: 20px;">No upcoming assignments.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance in Progress - {{ PLATFORM_NAME|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-color);
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+        }
+        .maintenance-container {
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+        .m-icon {
+            font-size: 5rem;
+            color: #f39c12;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; color: var(--text-color); }
+        p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; }
+        .back-soon {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="m-icon">
+            <i class="fa fa-screwdriver-wrench"></i>
+        </div>
+        <h1>Maintenance in Progress</h1>
+        <p>We're currently performing some scheduled upgrades to make your experience even better. Don't worry, we'll be back online very shortly!</p>
+        <div class="back-soon">We'll be back soon</div>
+        
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--border-color);">
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                <i class="fa fa-user-shield"></i> System Administrator?
+            </p>
+            <a href="{% url 'login' %}" style="display: inline-block; padding: 12px 30px; background: var(--primary-color); color: white; border-radius: 8px; text-decoration: none; font-weight: 500; transition: 0.2s;">
+                <i class="fa fa-sign-in-alt"></i> Staff Login
+            </a>
+        </div>
+    </div>
+</body>
+</html>

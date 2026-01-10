@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Schools - System Admin</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "super_admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <h1 style="font-size: 1.5rem; margin: 0;">All Registered Schools</h1>
+            </div>
+            <a href="{% url 'super_admin_create' %}" class="btn-add">
+                <i class="fa fa-plus"></i> Add New School
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="GET" style="margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow-color); display: flex; gap: 15px; align-items: center;">
+            <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                <i class="fa fa-search" style="color: #888;"></i>
+                <input type="text" name="search" placeholder="Search by school name or schema..." 
+                       value="{{ search_query }}" 
+                       style="flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); outline: none;">
+            </div>
+            <button type="submit" style="background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                <i class="fa fa-search"></i> Search
+            </button>
+            <a href="{% url 'super_admin_schools' %}" style="background: #95a5a6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                <i class="fa fa-rotate-right"></i> Reset
+            </a>
+        </form>
+
+        {% if search_query %}
+        <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa fa-filter"></i> Showing {{ schools.count }} school{{ schools.count|pluralize }} 
+            <span style="color: var(--primary-color); font-weight: 500;">(filtered by "{{ search_query }}")</span>
+        </div>
+        {% endif %}
+
+        {% if messages %}
+
+        <div class="messages-container" style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" style="padding: 15px; border-radius: 8px; background: rgba(46, 204, 113, 0.1); color: #27ae60; margin-bottom: 10px; border-left: 4px solid #2ecc71;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="premium-table-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>School Name</th>
+                        <th>Schema</th>
+                        <th>Domains</th>
+                        <th>Population</th>
+                        <th>Admin User</th>
+                        <th>Quota Usage</th>
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+                <tbody>
+                    {% for school in schools %}
+                    <tr>
+                        <td data-label="School Name">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="stat-icon" style="width: 35px; height: 35px; font-size: 0.9rem; background: rgba(74, 144, 226, 0.1); color: var(--primary-color); border-radius: 8px;">
+                                    <i class="fa fa-school"></i>
+                                </div>
+                                <span style="font-weight: 600;">{{ school.name }}</span>
+                            </div>
+                        </td>
+                        <td data-label="Schema"><span class="status-badge status-schema">{{ school.schema_name }}</span></td>
+                        <td data-label="Primary Domain">
+                            {% for d in school.domains.all %}
+                                {% if d.is_primary %}
+                                <span class="badge" style="background: #e1f5fe; color: #01579b; border: 1px solid #b3e5fc;">{{ d.domain }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td data-label="Population">
+                            <div style="display: flex; gap: 10px; font-size: 0.85rem;">
+                                <span title="Students"><i class="fa fa-user-graduate" style="color: var(--primary-color);"></i> {{ school.student_count }}</span>
+                                <span title="Teachers"><i class="fa fa-chalkboard-user" style="color: #2ecc71;"></i> {{ school.teacher_count }}</span>
+                            </div>
+                        </td>
+                        <td data-label="Admin User">
+                            {% if school.admin_exists %}
+                                <span class="badge" style="background: rgba(52, 152, 219, 0.1); color: #2980b9; font-family: monospace; font-size: 0.8rem;">
+                                    <i class="fa fa-user-shield"></i> {{ school.admin_username }}
+                                </span>
+                            {% else %}
+                                <span class="badge" style="background: rgba(231, 76, 60, 0.1); color: #c0392b;">
+                                    <i class="fa fa-exclamation-triangle"></i> No admin
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Quota Usage">
+                            {% if school.subscription_plan %}
+                                <div style="width: 150px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
+                                        <span style="color: var(--text-muted);">{{ school.subscription_plan.name }}</span>
+                                        <span style="color: var(--text-color); font-weight: 600;">{{ school.quota_stats.student_percent|floatformat:0 }}%</span>
+                                    </div>
+                                    <div style="height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden;">
+                                        <div style="height: 100%; width: {{ school.quota_stats.student_percent }}%; background: {% if school.quota_stats.student_percent > 90 %}#e74c3c{% elif school.quota_stats.student_percent > 70 %}#f39c12{% else %}#2ecc71{% endif %};"></div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="badge" style="background: rgba(149, 165, 166, 0.1); color: #7f8c8d;">No Plan</span>
+                            {% endif %}
+                        </td>
+
+                        <td data-label="Actions" class="actions">
+                            <div style="display: flex; gap: 15px;">
+                                <a href="{% url 'super_admin_impersonate' school.pk %}" class="impersonate" title="Login as Admin" style="color: #f39c12;">
+                                    <i class="fa fa-user-secret"></i>
+                                </a>
+                                <a href="{% url 'super_admin_edit' school.pk %}" class="edit" title="Edit">
+                                    <i class="fa fa-pen-to-square"></i>
+                                </a>
+                                <a href="{% url 'super_admin_delete' school.pk %}" onclick="return confirm('WARNING: This will permanently delete this school and all its data. Are you sure?')" class="delete" title="Delete">
+                                    <i class="fa fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No schools registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+</html>

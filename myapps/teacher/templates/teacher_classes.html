@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Subjects - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>My Subjects</h1>
+                    <p class="date">List of classrooms and subjects you are currently teaching.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modules-grid">
+            {% for class in classes %}
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, #2c3e50 100%);">
+                    <i class="fa fa-book-open"></i>
+                </div>
+                <div class="module-body">
+                    <h3 style="margin-bottom: 5px;">{{ class.subject.name }}</h3>
+                    <p style="color: var(--primary-color); font-weight: 600; margin-bottom: 10px;">{{ class.classroom.name }}</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">{{ class.classroom.students.count }} Students Enrolled</p>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <a href="{% url 'teacher_gradebook' class.id %}" class="btn-module" style="flex: 1; margin: 0;">
+                            <i class="fa fa-table"></i> Gradebook
+                        </a>
+                        <a href="{% url 'teacher_add_assignment' %}" class="btn-module" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); flex: 1; margin: 0;">
+                            <i class="fa fa-plus"></i> Assignment
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+                <i class="fa fa-folder-open" style="font-size: 3rem; color: var(--border-color); margin-bottom: 20px; display: block;"></i>
+                <h3 style="color: var(--text-muted);">No classes assigned yet.</h3>
+                <p style="color: var(--text-muted);">Contact your school administrator to assign you to a subject.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

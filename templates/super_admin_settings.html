@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - System Admin</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .branding-preview {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            background: var(--bg-color);
+        }
+        .color-bubble {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    {% include "super_admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>Global System Settings</h1>
+                <p class="date">Configure platform-wide branding and identity</p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div class="badge" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid currentColor;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <!-- Configuration Form -->
+            <div class="form-card" style="margin: 0;">
+                <h3 style="margin-top: 0; color: var(--text-color);"><i class="fa fa-paint-brush"></i> Platform Branding</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Platform Name</label>
+                        {{ form.platform_name }}
+                        <small style="color: var(--text-muted);">This name appears in sidebars, titles, and emails.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Primary Brand Color</label>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            {{ form.primary_color }}
+                            <code id="color-code">{{ settings.primary_color }}</code>
+                        </div>
+                        <small style="color: var(--text-muted);">The main accent color for buttons, icons, and active states.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">System Logo</label>
+                        {{ form.logo }}
+                        {% if settings.logo %}
+                        <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; display: inline-block;">
+                            <img src="{{ settings.logo.url }}" alt="Logo" style="max-height: 40px;">
+                        </div>
+                        {% endif %}
+                        <small style="color: var(--text-muted); display: block;">Recommended size: 200x50px (SVG or PNG with transparency).</small>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button type="submit" class="btn-module" style="background: var(--primary-color); color: white; border: none; cursor: pointer; width: 100%;">
+                            <i class="fa fa-save"></i> Save Global Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="card" style="margin: 0;">
+                <h3 style="margin-top: 0; color: var(--text-color);"><i class="fa fa-eye"></i> Live Identity Preview</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">This is how your branding looks to users.</p>
+                
+                <div class="branding-preview">
+                    <!-- Sidebar Preview -->
+                    <div id="preview-sidebar" style="background: #2c3e50; padding: 15px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        {% if settings.logo %}
+                            <img id="preview-logo" src="{{ settings.logo.url }}" style="max-height: 25px;">
+                        {% else %}
+                            <i id="preview-icon" class="fa fa-graduation-cap" style="color: {{ settings.primary_color }};"></i>
+                        {% endif %}
+                        <span id="preview-name" style="font-weight: 700; font-size: 1.1rem;">{{ settings.platform_name }}</span>
+                    </div>
+
+                    <!-- Button Preview -->
+                    <div style="margin-bottom: 15px;">
+                        <button id="preview-btn" style="background: {{ settings.primary_color }}; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 600;">
+                            Primary Button
+                        </button>
+                    </div>
+
+                    <!-- Active Link Preview -->
+                    <div id="preview-link" style="color: {{ settings.primary_color }}; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-chart-line"></i> Dashboard (Active)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const nameInput = document.querySelector('input[name="platform_name"]');
+        const colorInput = document.querySelector('input[name="primary_color"]');
+        const previewName = document.getElementById('preview-name');
+        const previewBtn = document.getElementById('preview-btn');
+        const previewLink = document.getElementById('preview-link');
+        const previewIcon = document.getElementById('preview-icon');
+        const colorCode = document.getElementById('color-code');
+
+        nameInput.addEventListener('input', (e) => {
+            previewName.textContent = e.target.value || 'EduManage';
+        });
+
+        colorInput.addEventListener('input', (e) => {
+            const color = e.target.value;
+            previewBtn.style.background = color;
+            previewLink.style.color = color;
+            if (previewIcon) previewIcon.style.color = color;
+            colorCode.textContent = color;
+        });
+    </script>
+</body>
+
+</html>

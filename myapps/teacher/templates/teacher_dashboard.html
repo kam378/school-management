@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Welcome back, {{ request.user.first_name }}! 👋</h1>
+                    <p class="date">Here's your academic overview for today.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-icon" style="background: rgba(74, 144, 226, 0.1); color: var(--primary-color);"><i class="fa fa-book"></i></div>
+                <h3>My Classes</h3>
+                <p class="value">{{ total_classes }}</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;"><i class="fa fa-file-signature"></i></div>
+                <h3>Active Assignments</h3>
+                <p class="value">{{ recent_assignments.count }}</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background: rgba(241, 196, 15, 0.1); color: #f1c40f;"><i class="fa fa-clock"></i></div>
+                <h3>Upcoming Tasks</h3>
+                <p class="value">0</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+            <!-- Recent Assignments -->
+            <div class="card" style="margin: 0; padding: 0; overflow: hidden;">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; color: var(--text-color);"><i class="fa fa-scroll"></i> Recent Assignments</h3>
+                    <a href="{% url 'teacher_assignments' %}" style="font-size: 0.8rem; color: var(--primary-color); text-decoration: none;">View All</a>
+                </div>
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Class</th>
+                            <th>Due Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in recent_assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.class_subject.classroom.name }}</td>
+                            <td>{{ assignment.due_date|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" class="status-badge status-schema" style="text-decoration: none;">
+                                    <i class="fa fa-table"></i> Grade
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 40px;">No assignments created yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="card" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
+                    <h3 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">Shortcut</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">Ready to mark grades for your last session?</p>
+                    <a href="{% url 'teacher_classes' %}" style="background: white; color: var(--primary-color); padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; text-decoration: none; margin-top: 15px;">
+                        Go to Gradebook
+                    </a>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-top: 0; font-size: 0.9rem;"><i class="fa fa-lightbulb" style="color: #f1c40f;"></i> Teaching Tip</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Regularly updating the Gradebook helps students stay on track with their performance.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+{% load static %}
+{% load core_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .timetable-grid {
+            overflow-x: auto;
+        }
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .timetable-table th {
+            background: var(--bg-color);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .timetable-table td {
+            padding: 20px 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+        .time-slot {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .class-card {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .class-card h4 {
+            margin: 0 0 5px;
+            font-size: 1rem;
+        }
+        .class-card small {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>My Timetable</h1>
+                    <p class="date">Weekly class schedule</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="timetable-grid">
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Day</th>
+                        <th>Class Schedule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day_id, day_name in days %}
+                    <tr>
+                        <td class="time-slot" style="background: var(--bg-color); font-weight: 700;">{{ day_name }}</td>
+                        <td style="display: flex; gap: 15px; flex-wrap: wrap; text-align: left; background: var(--card-bg);">
+                            {% for slot in timetable_data|get_item:day_id %}
+                            <div class="class-card" style="min-width: 200px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; opacity: 0.9; margin-bottom: 5px;">
+                                    <i class="fa fa-clock"></i> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                                </div>
+                                <h4>{{ slot.class_subject.subject.name }}</h4>
+                                <div style="font-size: 0.8rem;">
+                                    <i class="fa fa-user"></i> {{ slot.class_subject.teacher.get_full_name|default:slot.class_subject.teacher.username }}
+                                </div>
+                                {% if slot.room_number %}
+                                <div style="font-size: 0.75rem; margin-top: 5px; opacity: 0.8;">
+                                    <i class="fa fa-map-marker-alt"></i> Room: {{ slot.room_number }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div style="color: var(--text-muted); padding: 10px; font-style: italic;">No classes scheduled</div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Overview - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <h1>Academic Foundation</h1>
+                <p class="date">Configure the standard structure of your school.</p>
+            </div>
+        </div>
+
+        <div class="stats-grid" style="margin-bottom: 30px;">
+            <div class="card">
+                <div class="card-icon" style="background: rgba(74, 144, 226, 0.1); color: var(--primary-color);"><i class="fa fa-layer-group"></i></div>
+                <h3>Grade Levels</h3>
+                <p class="value">{{ grade_levels_count }}</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;"><i class="fa fa-book"></i></div>
+                <h3>Subjects</h3>
+                <p class="value">{{ subjects_count }}</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background: rgba(155, 89, 182, 0.1); color: #9b59b6;"><i class="fa fa-school"></i></div>
+                <h3>Classrooms</h3>
+                <p class="value">{{ classrooms_count }}</p>
+            </div>
+        </div>
+
+        <div class="modules-grid">
+            <!-- Grade Levels -->
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fa fa-layer-group"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Grade Levels</h3>
+                    <p>Define education levels (e.g., Grade 1, Year 10, Primary 1).</p>
+                    <a href="{% url 'admin_manage_grade_levels' %}" class="btn-module">Manage Levels</a>
+                </div>
+            </div>
+
+            <!-- Subjects -->
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fa fa-book"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Subjects</h3>
+                    <p>Manage the curriculum and subject codes.</p>
+                    <a href="{% url 'admin_manage_subjects' %}" class="btn-module">Manage Subjects</a>
+                </div>
+            </div>
+
+            <!-- Classrooms -->
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fa fa-school"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Classrooms</h3>
+                    <p>Create classes and assign students to sections.</p>
+                    <a href="{% url 'admin_manage_classrooms' %}" class="btn-module">Manage Classes</a>
+                </div>
+            </div>
+
+            <!-- Teacher Assignments -->
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                    <i class="fa fa-person-chalkboard"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Teacher Assignments</h3>
+                    <p>Assign teachers to specific subjects within a classroom.</p>
+                    <a href="{% url 'admin_manage_class_subjects' %}" class="btn-module">Assign Teachers</a>
+                </div>
+            </div>
+
+
+            <!-- Timetable -->
+            <div class="module-card">
+                <div class="module-header" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                    <i class="fa fa-calendar-alt"></i>
+                </div>
+                <div class="module-body">
+                    <h3>Timetable</h3>
+                    <p>Configure the weekly academic schedule for each class.</p>
+                    <a href="{% url 'admin_manage_timetable' %}" class="btn-module">Manage Timetable</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

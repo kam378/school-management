@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "parent_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>School Announcements</h1>
+                    <p class="date">Stay updated with the latest news and events.</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+            {% for item in announcements %}
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div>
+                        <h2 style="margin: 0; color: var(--primary-color); font-size: 1.3rem;">{{ item.title }}</h2>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                            <i class="fa fa-calendar-day"></i> {{ item.date|date:"F d, Y" }} at {{ item.date|time:"H:i" }}
+                        </p>
+                    </div>
+                    <span class="status-badge status-active">Important</span>
+                </div>
+                <div style="line-height: 1.6; color: var(--text-color);">
+                    {{ item.content|linebreaks }}
+                </div>
+            </div>
+            {% empty %}
+            <div class="card" style="text-align: center; padding: 60px;">
+                <i class="fa fa-bullhorn" style="font-size: 3rem; opacity: 0.1; margin-bottom: 20px; display: block;"></i>
+                <p style="color: var(--text-muted); font-weight: 500;">No announcements posted yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Add New User</h1>
+                    <p class="date">Create a new student, teacher, or staff account.</p>
+                </div>
+            </div>
+            <a href="{% url 'school_admin_manage_users' %}" class="btn-module" style="background: #eee; color: #333; margin-top:0;">
+                <i class="fa fa-arrow-left"></i> Cancel
+            </a>
+        </div>
+
+        <div class="form-card">
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; background: #e3f2fd; color: #0d47a1;">
+                    <i class="fa fa-info-circle"></i> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <h3 style="margin-top:0; color: var(--secondary-color); margin-bottom: 20px;">Account Details</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                        <small style="color: #888; font-size: 0.75rem;">Minimum 8 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    {{ form.role }}
+                    {% if form.role.errors %}
+                        <div style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">{{ form.role.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-submit">Create User</button>
+                
+            </form>
+
+        </div>
+
+    </main>
+</body>
+</html>
