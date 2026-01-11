@@ -27,53 +27,29 @@
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            <!-- Pending Assignment -->
-            <div class="card" style="border-left: 4px solid #e74c3c;">
+            {% for assignment in assignments %}
+            <div class="card" style="border-left: 4px solid var(--primary-color);">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                     <div>
-                        <h3 style="margin: 0 0 5px; color: var(--text-color);">Algebra Homework</h3>
-                        <small style="color: var(--text-muted);"><i class="fa fa-book"></i> Mathematics</small>
+                        <h3 style="margin: 0 0 5px; color: var(--text-color);">{{ assignment.title }}</h3>
+                        <small style="color: var(--text-muted);"><i class="fa fa-book"></i> {{ assignment.class_subject.subject.name }}</small>
                     </div>
-                    <span style="background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Pending</span>
+                    <!-- Status is simplified since we don't have submission tracking yet -->
+                    <span style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Active</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Complete exercises 1-20 from Chapter 5</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">{{ assignment.description|truncatewords:15 }}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                    <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa fa-calendar"></i> Due: June 20, 2023</span>
-                    <a href="student_single_assignments.html" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa fa-calendar"></i> Due: {{ assignment.due_date|date:"M d, Y" }}</span>
+                    <a href="{% url 'student_single_assignment' assignment.id %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a>
                 </div>
             </div>
-
-            <!-- Submitted Assignment -->
-            <div class="card" style="border-left: 4px solid #f39c12;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                    <div>
-                        <h3 style="margin: 0 0 5px; color: var(--text-color);">Essay on Macbeth</h3>
-                        <small style="color: var(--text-muted);"><i class="fa fa-book"></i> English</small>
-                    </div>
-                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Submitted</span>
-                </div>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Write a 1000-word essay analyzing themes in Macbeth</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                    <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa fa-calendar"></i> Due: June 25, 2023</span>
-                    <a href="student_single_assignments.html" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a>
-                </div>
+            {% empty %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fa fa-check-circle" style="font-size: 3rem; color: #2ecc71; margin-bottom: 15px;"></i>
+                <h3 style="color: var(--text-color);">No Assignments Found</h3>
+                <p style="color: var(--text-muted);">You're all caught up! Check back later for new tasks.</p>
             </div>
-
-            <!-- Graded Assignment -->
-            <div class="card" style="border-left: 4px solid #2ecc71;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                    <div>
-                        <h3 style="margin: 0 0 5px; color: var(--text-color);">Lab Report</h3>
-                        <small style="color: var(--text-muted);"><i class="fa fa-book"></i> Science</small>
-                    </div>
-                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Graded: 92%</span>
-                </div>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Document your chemistry experiment results</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                    <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa fa-calendar"></i> Submitted: June 10, 2023</span>
-                    <a href="student_single_assignments.html" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
 
     </main>

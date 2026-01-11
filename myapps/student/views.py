@@ -101,10 +101,16 @@ def student_assignments(request):
   return render(request, "student_assignments.html", {'assignments': assignments})
 
 
-def student_single_assignment(request):
+def student_single_assignment(request, id):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
-  return render(request, "student_single_assignments.html")
+  
+  assignment = get_object_or_404(Assignment, id=id)
+  
+  # Check if submission exists (Grade can imply submission if we don't have a separate Submission model yet)
+  # For now, we just pass the assignment
+  
+  return render(request, "student_single_assignments.html", {'assignment': assignment})
 
 def student_attendance(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
