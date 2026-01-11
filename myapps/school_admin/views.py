@@ -161,7 +161,16 @@ def admin_edit_user(request, id):
         if form.is_valid():
             if profile_form:
                 if profile_form.is_valid():
+                    # Check if classroom changed
+                    old_classroom = profile.classroom
                     profile_form.save()
+                    new_classroom = profile.classroom
+                    
+                    if old_classroom != new_classroom:
+                        if old_classroom:
+                            old_classroom.students.remove(profile.student)
+                        if new_classroom:
+                            new_classroom.students.add(profile.student)
                 else:
                      # Return with errors
                      status_choices = [c[0] for c in User.ROLE_CHOICES]
@@ -826,6 +835,10 @@ def admin_promote_execute(request):
                 for student_id in selected_student_ids:
                     profile = get_object_or_404(StudentProfile, id=student_id)
                     
+                    # Sync Classroom ManyToMany (Remove from current)
+                    if profile.classroom:
+                        profile.classroom.students.remove(profile.student)
+                    
                     PromotionRecord.objects.create(
                         student=profile.student,
                         from_grade=profile.grade_level,
@@ -854,6 +867,10 @@ def admin_promote_execute(request):
             for student_id in selected_student_ids:
                 # student_id here is the StudentProfile ID
                 profile = get_object_or_404(StudentProfile, id=student_id)
+
+                # Sync Classroom ManyToMany (Remove from old)
+                if profile.classroom:
+                    profile.classroom.students.remove(profile.student)
                 
                 # Create Audit Record
                 PromotionRecord.objects.create(
@@ -871,6 +888,9 @@ def admin_promote_execute(request):
                 profile.grade_level = target_grade
                 profile.classroom = target_classroom
                 profile.save()
+                
+                # Add to new classroom M2M
+                target_classroom.students.add(profile.student)
                 
                 # Update the User's class subject enrollment? 
                 # This depends on how class enrollment works. 
