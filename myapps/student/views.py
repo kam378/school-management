@@ -17,21 +17,30 @@ def student_dashboard(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
 
-  # Get student's classroom
+  # Multi-method classroom detection
   classroom = Classroom.objects.filter(students=request.user).first()
+  if not classroom and hasattr(request.user, 'student_profile'):
+      classroom = request.user.student_profile.classroom
+  if not classroom:
+      classroom = getattr(request.user, 'classrooms_enrolled', Classroom.objects.none()).first()
   
   upcoming_assignments = []
   average_grade = 0
   
   if classroom:
-      # Get assignments for the classes the student is in
-      upcoming_assignments = Assignment.objects.filter(class_subject__classroom=classroom).order_by('due_date')[:3]
+      # Today's Date
+      from django.utils import timezone
+      today = timezone.now().date()
+      
+      upcoming_assignments = Assignment.objects.filter(
+          class_subject__classroom=classroom,
+          due_date__gte=today
+      ).order_by('due_date')[:5]
       
       # Calculate average grade
       grades = Grade.objects.filter(student=request.user)
       if grades.exists():
           avg_score = grades.aggregate(Avg('score'))['score__avg']
-          # Assuming grades are percentages or normalizing to 100
           average_grade = round(avg_score, 1)
 
   context = {
@@ -135,17 +144,264 @@ def student_single_assignment(request, id):
 def student_attendance(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
-  return render(request, "student_attendance.html")
+  from myapps.attendances.models import StudentAttendance
+  
+  # Multi-method classroom detection
+  classroom = Classroom.objects.filter(students=request.user).first()
+  if not classroom and hasattr(request.user, 'student_profile'):
+      classroom = request.user.student_profile.classroom
+  if not classroom:
+      classroom = getattr(request.user, 'classrooms_enrolled', Classroom.objects.none()).first()
+
+  attendance_records = StudentAttendance.objects.filter(student=request.user).order_by('-date')
+  
+  # Statistics
+  total = attendance_records.count()
+  present = attendance_records.filter(status='present').count()
+  late = attendance_records.filter(status='late').count()
+  absent = attendance_records.filter(status='absent').count()
+  rate = (present / total * 100) if total > 0 else 0
+
+  context = {
+      'classroom': classroom,
+      'attendance_records': attendance_records,
+      'total_days': total,
+      'present_days': present,
+      'late_days': late,
+      'absent_days': absent,
+      'attendance_rate': round(rate, 1)
+  }
+  return render(request, "student_attendance.html", context)
 
 def student_grades(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
   
-  grades = Grade.objects.filter(student=request.user).order_by('-graded_at')
+  # Multi-method classroom detection
+  classroom = Classroom.objects.filter(students=request.user).first()
+  if not classroom and hasattr(request.user, 'student_profile'):
+      classroom = request.user.student_profile.classroom
+  if not classroom:
+      classroom = getattr(request.user, 'classrooms_enrolled', Classroom.objects.none()).first()
   
-  # Group grades by subject for better visualization if needed
-  # Simplified for now
-  return render(request, "student_grades.html", {'grades': grades})
+  if not classroom:
+      return render(request, "student_grades.html", {
+          'grades_by_subject': {},
+          'overall_gpa': 0,
+          'total_subjects': 0
+      })
+  
+  # Get all class subjects for this classroom
+  class_subjects = ClassSubject.objects.filter(classroom=classroom).select_related('subject', 'teacher')
+  
+  # Group grades by subject
+  grades_by_subject = {}
+  total_percentage = 0
+  subject_graded_count = 0
+  
+  for class_subject in class_subjects:
+      # Get all grades for this subject
+      subject_grades = Grade.objects.filter(
+          student=request.user,
+          assignment__class_subject=class_subject
+      ).select_related('assignment').order_by('-graded_at')
+      
+      subject_percentage = 0
+      letter_grade = 'N/A'
+      
+      if subject_grades.exists():
+          # Calculate average for this subject
+          total_score = sum(g.score for g in subject_grades)
+          total_max = sum(g.assignment.max_score for g in subject_grades)
+          subject_percentage = (total_score / total_max * 100) if total_max > 0 else 0
+          
+          # Determine letter grade
+          if subject_percentage >= 90: letter_grade = 'A+'
+          elif subject_percentage >= 85: letter_grade = 'A'
+          elif subject_percentage >= 80: letter_grade = 'A-'
+          elif subject_percentage >= 75: letter_grade = 'B+'
+          elif subject_percentage >= 70: letter_grade = 'B'
+          elif subject_percentage >= 65: letter_grade = 'B-'
+          elif subject_percentage >= 60: letter_grade = 'C+'
+          elif subject_percentage >= 55: letter_grade = 'C'
+          else: letter_grade = 'F'
+          
+          total_percentage += subject_percentage
+          subject_graded_count += 1
+      
+      grades_by_subject[class_subject.subject.name] = {
+          'teacher': class_subject.teacher.get_full_name() if class_subject.teacher else "N/A",
+          'letter_grade': letter_grade,
+          'percentage': round(subject_percentage, 1) if subject_grades.exists() else 0,
+          'grades': subject_grades,
+          'has_grades': subject_grades.exists()
+      }
+  
+  # Calculate overall GPA (4.0 scale)
+  overall_percentage = (total_percentage / subject_graded_count) if subject_graded_count > 0 else 0
+  if overall_percentage >= 90: overall_gpa = 4.0
+  elif overall_percentage >= 85: overall_gpa = 3.7
+  elif overall_percentage >= 80: overall_gpa = 3.3
+  elif overall_percentage >= 75: overall_gpa = 3.0
+  elif overall_percentage >= 70: overall_gpa = 2.7
+  elif overall_percentage >= 65: overall_gpa = 2.3
+  elif overall_percentage >= 60: overall_gpa = 2.0
+  elif subject_graded_count > 0: overall_gpa = 1.0
+  else: overall_gpa = 0.0
+  
+  context = {
+      'grades_by_subject': grades_by_subject,
+      'overall_gpa': overall_gpa,
+      'total_subjects': class_subjects.count()
+  }
+  
+  return render(request, "student_grades.html", context)
+
+
+def student_report_card(request):
+  """Generate a comprehensive report card with all academic data"""
+  if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
+    return redirect("login")
+  
+  from myapps.attendances.models import StudentAttendance
+  from django.utils import timezone
+  
+  from django.db import connection
+  
+  # Multi-method classroom detection
+  classroom = Classroom.objects.filter(students=request.user).first()
+  if not classroom and hasattr(request.user, 'student_profile'):
+      classroom = request.user.student_profile.classroom
+  if not classroom:
+      classroom = getattr(request.user, 'classrooms_enrolled', Classroom.objects.none()).first()
+
+  # Get tenant name as fallback for school name
+  tenant = getattr(connection, 'tenant', None)
+  tenant_name = tenant.name if tenant else "School Management System"
+  
+  if not classroom:
+      return render(request, "student_report_card.html", {
+          'school_name': tenant_name,
+          'grades_by_subject': {},
+          'overall_gpa': 0,
+          'classroom': None,
+          'attendance_summary': {
+              'total_days': 0, 'present_days': 0, 'late_days': 0, 'absent_days': 0, 'attendance_rate': 0
+          },
+          'total_subjects': 0,
+          'overall_percentage': 0,
+          'report_date': timezone.now()
+      })
+  
+  # Get all class subjects for this classroom
+  class_subjects = ClassSubject.objects.filter(classroom=classroom).select_related('subject', 'teacher')
+  
+  # Group grades by subject with detailed breakdown
+  grades_by_subject = {}
+  total_percentage = 0
+  subject_graded_count = 0
+  
+  for class_subject in class_subjects:
+      # Get all grades for this subject
+      subject_grades = Grade.objects.filter(
+          student=request.user,
+          assignment__class_subject=class_subject
+      ).select_related('assignment').order_by('assignment__due_date')
+      
+      subject_percentage = 0
+      letter_grade = 'N/A'
+      grade_point = 0.0
+      total_score = 0
+      total_max = 0
+      
+      if subject_grades.exists():
+          # Calculate average for this subject
+          total_score = sum(g.score for g in subject_grades)
+          total_max = sum(g.assignment.max_score for g in subject_grades)
+          subject_percentage = (total_score / total_max * 100) if total_max > 0 else 0
+          
+          # Determine letter grade
+          if subject_percentage >= 90:
+              letter_grade = 'A+'
+              grade_point = 4.0
+          elif subject_percentage >= 85:
+              letter_grade = 'A'
+              grade_point = 3.7
+          elif subject_percentage >= 80:
+              letter_grade = 'A-'
+              grade_point = 3.3
+          elif subject_percentage >= 75:
+              letter_grade = 'B+'
+              grade_point = 3.0
+          elif subject_percentage >= 70:
+              letter_grade = 'B'
+              grade_point = 2.7
+          elif subject_percentage >= 65:
+              letter_grade = 'B-'
+              grade_point = 2.3
+          elif subject_percentage >= 60:
+              letter_grade = 'C+'
+              grade_point = 2.0
+          elif subject_percentage >= 55:
+              letter_grade = 'C'
+              grade_point = 1.7
+          else:
+              letter_grade = 'F'
+              grade_point = 0.0
+          
+          total_percentage += subject_percentage
+          subject_graded_count += 1
+      
+      grades_by_subject[class_subject.subject.name] = {
+          'teacher': class_subject.teacher.get_full_name() if class_subject.teacher else "N/A",
+          'letter_grade': letter_grade,
+          'percentage': round(subject_percentage, 1) if subject_grades.exists() else 0,
+          'grade_point': grade_point,
+          'assignment_count': subject_grades.count(),
+          'total_score': total_score,
+          'total_max': total_max,
+          'has_grades': subject_grades.exists()
+      }
+  
+  # Calculate overall GPA
+  overall_percentage = (total_percentage / subject_graded_count) if subject_graded_count > 0 else 0
+  if overall_percentage >= 90: overall_gpa = 4.0
+  elif overall_percentage >= 85: overall_gpa = 3.7
+  elif overall_percentage >= 80: overall_gpa = 3.3
+  elif overall_percentage >= 75: overall_gpa = 3.0
+  elif overall_percentage >= 70: overall_gpa = 2.7
+  elif overall_percentage >= 65: overall_gpa = 2.3
+  elif overall_percentage >= 60: overall_gpa = 2.0
+  elif subject_graded_count > 0: overall_gpa = 1.0
+  else: overall_gpa = 0.0
+  
+  # Get attendance summary
+  total_days = StudentAttendance.objects.filter(student=request.user).count()
+  present_days = StudentAttendance.objects.filter(student=request.user, status='present').count()
+  late_days = StudentAttendance.objects.filter(student=request.user, status='late').count()
+  absent_days = StudentAttendance.objects.filter(student=request.user, status='absent').count()
+  attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+  
+  attendance_summary = {
+      'total_days': total_days,
+      'present_days': present_days,
+      'late_days': late_days,
+      'absent_days': absent_days,
+      'attendance_rate': round(attendance_rate, 1)
+  }
+  
+  context = {
+      'school_name': tenant_name,
+      'grades_by_subject': grades_by_subject,
+      'overall_gpa': overall_gpa,
+      'overall_percentage': round(overall_percentage, 1),
+      'total_subjects': class_subjects.count(),
+      'classroom': classroom,
+      'attendance_summary': attendance_summary,
+      'report_date': timezone.now()
+  }
+  
+  return render(request, "student_report_card.html", context)
 
 
 def student_profile(request):
@@ -187,7 +443,3 @@ def student_grade_detail(request):
     return redirect("login")
   return render(request, "student_grade_detail.html")
 
-def student_report_card(request):
-  if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
-    return redirect("login")
-  return render(request, "student_report_card.html")

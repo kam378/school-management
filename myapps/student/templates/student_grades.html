@@ -32,8 +32,18 @@
         <!-- GPA Card -->
         <div class="card" style="margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
             <h3 style="margin: 0 0 10px; opacity: 0.9;">Overall GPA</h3>
-            <div style="font-size: 3rem; font-weight: 700; margin: 10px 0;">3.85</div>
-            <p style="margin: 0; opacity: 0.9;">Excellent Performance!</p>
+            <div style="font-size: 3rem; font-weight: 700; margin: 10px 0;">{{ overall_gpa|floatformat:2 }}</div>
+            <p style="margin: 0; opacity: 0.9;">
+                {% if overall_gpa >= 3.7 %}
+                    Excellent Performance!
+                {% elif overall_gpa >= 3.0 %}
+                    Great Work!
+                {% elif overall_gpa >= 2.0 %}
+                    Keep Improving!
+                {% else %}
+                    Need More Effort
+                {% endif %}
+            </p>
         </div>
 
         <!-- Grades by Subject -->
@@ -50,54 +60,35 @@
                 </tr>
             </thead>
             <tbody>
+                {% for subject_name, subject_data in grades_by_subject.items %}
                 <tr>
-                    <td data-label="Subject"><i class="fa fa-calculator" style="color: var(--primary-color); margin-right: 8px;"></i> Mathematics</td>
-                    <td data-label="Teacher">Mr. Johnson</td>
-                    <td data-label="Grade"><strong>A</strong></td>
-                    <td data-label="Percentage">92%</td>
-                    <td data-label="Status"><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Excellent</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
+                    <td data-label="Subject">
+                        <i class="fa fa-book" style="color: var(--primary-color); margin-right: 8px;"></i> {{ subject_name }}
+                    </td>
+                    <td data-label="Teacher">{{ subject_data.teacher }}</td>
+                    <td data-label="Grade"><strong>{{ subject_data.letter_grade }}</strong></td>
+                    <td data-label="Percentage">{{ subject_data.percentage }}%</td>
+                    <td data-label="Status">
+                        {% if subject_data.percentage >= 85 %}
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Excellent</span>
+                        {% elif subject_data.percentage >= 70 %}
+                            <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Good</span>
+                        {% else %}
+                            <span style="background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Needs Improvement</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Details">
+                        <a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a>
+                    </td>
                 </tr>
+                {% empty %}
                 <tr>
-                    <td data-label="Subject"><i class="fa fa-book" style="color: #e74c3c; margin-right: 8px;"></i> English</td>
-                    <td data-label="Teacher">Ms. Smith</td>
-                    <td data-label="Grade"><strong>A-</strong></td>
-                    <td data-label="Percentage">88%</td>
-                    <td data-label="Status"><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Excellent</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fa fa-inbox" style="font-size: 3rem; opacity: 0.3; margin-bottom: 10px;"></i>
+                        <p>No grades recorded yet. Complete assignments to see your grades here.</p>
+                    </td>
                 </tr>
-                <tr>
-                    <td data-label="Subject"><i class="fa fa-flask" style="color: #2ecc71; margin-right: 8px;"></i> Science</td>
-                    <td data-label="Teacher">Dr. Brown</td>
-                    <td data-label="Grade"><strong>A+</strong></td>
-                    <td data-label="Percentage">96%</td>
-                    <td data-label="Status"><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Outstanding</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
-                </tr>
-                <tr>
-                    <td data-label="Subject"><i class="fa fa-landmark" style="color: #f39c12; margin-right: 8px;"></i> History</td>
-                    <td data-label="Teacher">Mr. Davis</td>
-                    <td data-label="Grade"><strong>B+</strong></td>
-                    <td data-label="Percentage">85%</td>
-                    <td data-label="Status"><span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Good</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
-                </tr>
-                <tr>
-                    <td data-label="Subject"><i class="fa fa-palette" style="color: #9b59b6; margin-right: 8px;"></i> Art</td>
-                    <td data-label="Teacher">Ms. Wilson</td>
-                    <td data-label="Grade"><strong>A</strong></td>
-                    <td data-label="Percentage">90%</td>
-                    <td data-label="Status"><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Excellent</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
-                </tr>
-                <tr>
-                    <td data-label="Subject"><i class="fa fa-running" style="color: #3498db; margin-right: 8px;"></i> Physical Education</td>
-                    <td data-label="Teacher">Coach Lee</td>
-                    <td data-label="Grade"><strong>A</strong></td>
-                    <td data-label="Percentage">94%</td>
-                    <td data-label="Status"><span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Excellent</span></td>
-                    <td data-label="Details"><a href="{% url 'student_grade_detail' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">View Details →</a></td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
 
