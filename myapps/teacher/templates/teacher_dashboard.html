@@ -46,6 +46,22 @@
             </div>
         </div>
 
+        <!-- My Homeroom Class (if assigned) -->
+        {% if homeroom_class %}
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="color: white; margin: 0 0 10px;"><i class="fa fa-star"></i> My Homeroom Class</h3>
+                    <h2 style="color: white; margin: 0; font-size: 2rem;">{{ homeroom_class.name }}</h2>
+                    <p style="opacity: 0.9; margin: 5px 0 0;">{{ homeroom_class.level.name }} | {{ homeroom_class.students.count }} Students</p>
+                </div>
+                <a href="{% url 'teacher_homeroom_class' %}" style="background: white; color: #667eea; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    View Class Details
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
             <!-- Recent Assignments -->
             <div class="card" style="margin: 0; padding: 0; overflow: hidden;">

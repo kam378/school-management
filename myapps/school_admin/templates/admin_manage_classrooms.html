@@ -48,6 +48,10 @@
                         {{ form.level }}
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Homeroom Teacher (Form Teacher)</label>
+                        {{ form.homeroom_teacher }}
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Enrolled Students (Hold Ctrl to multiple select)</label>
                         {{ form.students }}
                     </div>
@@ -62,6 +66,7 @@
                         <tr>
                             <th>Class Name</th>
                             <th>Grade Level</th>
+                            <th>Homeroom Teacher</th>
                             <th>Population</th>
                             <th>Actions</th>
                         </tr>
@@ -71,6 +76,14 @@
                         <tr>
                             <td style="font-weight: 600;">{{ classroom.name }}</td>
                             <td>{{ classroom.level.name }}</td>
+                            <td>
+                                {% if classroom.homeroom_teacher %}
+                                    <i class="fa fa-chalkboard-teacher" style="color: var(--primary-color); margin-right: 5px;"></i>
+                                    {{ classroom.homeroom_teacher.get_full_name }}
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">Not assigned</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="status-badge status-active">
                                     <i class="fa fa-users"></i> {{ classroom.students.count }} Students
@@ -89,7 +102,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 40px;">No classes created yet.</td>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No classes created yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

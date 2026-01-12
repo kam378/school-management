@@ -107,10 +107,30 @@ def student_single_assignment(request, id):
   
   assignment = get_object_or_404(Assignment, id=id)
   
-  # Check if submission exists (Grade can imply submission if we don't have a separate Submission model yet)
-  # For now, we just pass the assignment
+  # Check if submission exists
+  from myapps.teacher.models import StudentSubmission
+  submission = StudentSubmission.objects.filter(assignment=assignment, student=request.user).first()
   
-  return render(request, "student_single_assignments.html", {'assignment': assignment})
+  if request.method == 'POST':
+      submission_file = request.FILES.get('submission_file')
+      submission_link = request.POST.get('submission_link')
+      
+      if submission_file or submission_link:
+          if not submission:
+              submission = StudentSubmission(assignment=assignment, student=request.user)
+          
+          if submission_file:
+              submission.submission_file = submission_file
+          if submission_link:
+              submission.submission_link = submission_link
+              
+          submission.save()
+          messages.success(request, "Assignment submitted successfully!")
+          return redirect('student_single_assignment', id=id)
+      else:
+          messages.error(request, "Please provide a file or a link.")
+
+  return render(request, "student_single_assignments.html", {'assignment': assignment, 'submission': submission})
 
 def student_attendance(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":

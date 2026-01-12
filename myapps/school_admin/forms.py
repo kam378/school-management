@@ -64,10 +64,11 @@ class SubjectForm(forms.ModelForm):
 class ClassroomForm(forms.ModelForm):
     class Meta:
         model = Classroom
-        fields = ['name', 'level', 'students']
+        fields = ['name', 'level', 'homeroom_teacher', 'students']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'level': forms.Select(attrs={'class': 'form-control'}),
+            'homeroom_teacher': forms.Select(attrs={'class': 'form-control'}),
             'students': forms.SelectMultiple(attrs={'class': 'form-control'}),
         }
 

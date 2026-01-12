@@ -59,6 +59,15 @@ class Classroom(models.Model):
     name = models.CharField(max_length=50)
     level = models.ForeignKey(GradeLevel, on_delete=models.CASCADE, related_name='classrooms')
     students = models.ManyToManyField('accounts.User', limit_choices_to={'role': 'student'}, related_name='classrooms_enrolled', blank=True)
+    homeroom_teacher = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={'role': 'teacher'},
+        related_name='homeroom_class',
+        help_text="Form teacher responsible for this class"
+    )
 
     def __str__(self):
         return f"{self.name} ({self.level.name})"

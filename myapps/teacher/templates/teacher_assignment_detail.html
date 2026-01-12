@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Submissions - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <a href="{% url 'teacher_assignments' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <i class="fa fa-arrow-left"></i> Back to Assignments
+                </a>
+                <h1>{{ assignment.title }}</h1>
+                <p class="date">{{ assignment.class_subject.classroom.name }} | {{ assignment.class_subject.subject.name }}</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'teacher_edit_assignment' assignment.id %}" class="btn-module" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                    <i class="fa fa-pen"></i> Edit
+                </a>
+                <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" class="btn-module" style="background: var(--primary-color); color: white;">
+                    <i class="fa fa-table"></i> Gradebook
+                </a>
+            </div>
+        </div>
+
+        <div class="stats-grid" style="margin-bottom: 30px;">
+            <div class="card">
+                <h3>Due Date</h3>
+                <p class="value" style="font-size: 1.2rem;">{{ assignment.due_date|date:"M d, Y" }}</p>
+                <small style="color: var(--text-muted);">{{ assignment.due_date|time:"H:i" }}</small>
+            </div>
+            <div class="card">
+                <h3>Submissions</h3>
+                <p class="value" style="font-size: 1.2rem;">{{ assignment.submissions.count }} / {{ student_status|length }}</p>
+                <small style="color: var(--text-muted);">Students turned in</small>
+            </div>
+            <div class="card">
+                <h3>Max Score</h3>
+                <p class="value" style="font-size: 1.2rem;">{{ assignment.max_score }}</p>
+                <small style="color: var(--text-muted);">Points possible</small>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">
+                <h3 style="margin: 0;">Student Submissions</h3>
+            </div>
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Status</th>
+                        <th>Submission Details</th>
+                        <th>Submitted At</th>
+                        <th>Current Grade</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in student_status %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ item.student.get_full_name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.student.username }}</div>
+                        </td>
+                        <td>
+                            {% if item.submission %}
+                                <span class="status-badge status-active">Submitted</span>
+                            {% else %}
+                                <span class="status-badge" style="background: #ffebee; color: #c62828;">Missing</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.submission %}
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    {% if item.submission.submission_file %}
+                                        <a href="{{ item.submission.submission_file.url }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">
+                                            <i class="fa fa-file-download"></i> Download File
+                                        </a>
+                                    {% endif %}
+                                    {% if item.submission.submission_link %}
+                                        <a href="{{ item.submission.submission_link }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">
+                                            <i class="fa fa-link"></i> View Link
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-style: italic;">No submission</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.submission %}
+                                {{ item.submission.submitted_at|date:"M d, Y H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if item.grade %}
+                                <span style="font-weight: 600; color: var(--primary-color);">{{ item.grade.score }}</span> / {{ assignment.max_score }}
+                            {% else %}
+                                <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" class="btn-module" style="padding: 5px 10px; font-size: 0.8rem; margin: 0;">
+                                <i class="fa fa-edit"></i> Grade
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

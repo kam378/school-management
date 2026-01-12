@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Homeroom Class - {{ global_settings.platform_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "favicon.html" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% include "teacher_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div>
+                <a href="{% url 'teacher_dashboard' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <i class="fa fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h1><i class="fa fa-star" style="color: #f39c12;"></i> My Homeroom Class</h1>
+                <p class="date">{{ homeroom_class.name }} ({{ homeroom_class.level.name }}) | {{ student_data|length }} Students</p>
+            </div>
+        </div>
+
+        <!-- Class Overview Stats -->
+        <div class="stats-grid" style="margin-bottom: 30px;">
+            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3 style="color: white; opacity: 0.9;">Total Students</h3>
+                <p class="value" style="color: white;">{{ student_data|length }}</p>
+            </div>
+            <div class="card" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white;">
+                <h3 style="color: white; opacity: 0.9;">Average Attendance</h3>
+                <p class="value" style="color: white;">
+                    {% widthratio student_data|length 1 student_data|length as avg %}
+                    {% for data in student_data %}
+                        {% if forloop.first %}{{ data.attendance_rate }}{% endif %}
+                    {% endfor %}%
+                </p>
+            </div>
+            <div class="card" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
+                <h3 style="color: white; opacity: 0.9;">Class Level</h3>
+                <p class="value" style="color: white; font-size: 1.5rem;">{{ homeroom_class.level.name }}</p>
+            </div>
+        </div>
+
+        <!-- Student Roster -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">
+                <h3 style="margin: 0;"><i class="fa fa-users"></i> Student Roster</h3>
+            </div>
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Attendance Rate</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in student_data %}
+                    <tr>
+                        <td>{{ data.student.custom_id }}</td>
+                        <td style="font-weight: 600;">{{ data.student.get_full_name }}</td>
+                        <td>{{ data.student.email|default:"Not provided" }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="flex: 1; background: var(--border-color); border-radius: 10px; height: 8px; overflow: hidden;">
+                                    <div style="width: {{ data.attendance_rate }}%; height: 100%; background: {% if data.attendance_rate >= 90 %}#2ecc71{% elif data.attendance_rate >= 75 %}#f39c12{% else %}#e74c3c{% endif %}; border-radius: 10px;"></div>
+                                </div>
+                                <span style="font-weight: 600; color: {% if data.attendance_rate >= 90 %}#2ecc71{% elif data.attendance_rate >= 75 %}#f39c12{% else %}#e74c3c{% endif %};">
+                                    {{ data.attendance_rate }}%
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'teacher_student_detail' data.student.id %}" class="btn-module" style="padding: 6px 12px; font-size: 0.85rem; margin: 0;">
+                                <i class="fa fa-eye"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fa fa-inbox" style="font-size: 3rem; opacity: 0.3; margin-bottom: 10px;"></i>
+                            <p>No students enrolled in this class yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+</body>
+</html>

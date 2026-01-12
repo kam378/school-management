@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 # URLs accessible ONLY via subdomains (e.g., school1.edumanage.com)
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,3 +17,6 @@ urlpatterns = [
     path('chat/', include("myapps.chat_system.urls")),
     path('attendance/', include("myapps.attendances.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

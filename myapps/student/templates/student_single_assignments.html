@@ -28,8 +28,6 @@
             </div>
         </div>
 
-        <div class="detail-card">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                 <div>
                     <h1 class="detail-title">{{ assignment.title }}</h1>
                     <div class="detail-meta">
@@ -38,7 +36,11 @@
                         <span><i class="fa fa-calendar"></i> Due: {{ assignment.due_date|date:"M d, Y" }}</span>
                     </div>
                 </div>
-                <span style="background: #ffebee; color: #c62828; padding: 8px 16px; border-radius: 12px; font-weight: 500;">Active</span>
+                {% if submission %}
+                <span style="background: #e8f5e9; color: #2e7d32; padding: 8px 16px; border-radius: 12px; font-weight: 500;">Submitted</span>
+                {% else %}
+                <span style="background: #ffebee; color: #c62828; padding: 8px 16px; border-radius: 12px; font-weight: 500;">Pending</span>
+                {% endif %}
             </div>
             
             <div style="margin-bottom: 30px;">
@@ -49,15 +51,70 @@
             </div>
 
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <h3 style="color: var(--text-color); margin-bottom: 15px;">Submit Assignment</h3>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <button class="btn-module" style="background: var(--primary-color); color: white; border: none; cursor: pointer;">
-                        <i class="fa fa-upload"></i> Upload File
-                    </button>
-                    <button class="btn-module" style="background: var(--bg-color); color: var(--text-color); border: none; cursor: pointer;">
-                        <i class="fa fa-link"></i> Add Link
-                    </button>
+                <h3 style="color: var(--text-color); margin-bottom: 15px;">Your Submission</h3>
+                
+                {% if messages %}
+                <div style="margin-bottom: 20px;">
+                    {% for message in messages %}
+                    <div style="padding: 10px; border-radius: 4px; background: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %};">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                 </div>
+                {% endif %}
+
+                {% if submission %}
+                    <div style="padding: 20px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color);">
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">
+                            <i class="fa fa-check-circle" style="color: #2ecc71;"></i> 
+                            Submitted on {{ submission.submitted_at|date:"M d, Y H:i" }}
+                        </p>
+                        
+                        {% if submission.submission_file %}
+                        <div style="margin-bottom: 10px;">
+                            <strong>File:</strong> 
+                            <a href="{{ submission.submission_file.url }}" target="_blank" style="color: var(--primary-color);">Download Submission</a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if submission.submission_link %}
+                        <div>
+                            <strong>Link:</strong> 
+                            <a href="{{ submission.submission_link }}" target="_blank" style="color: var(--primary-color);">{{ submission.submission_link }}</a>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Optional: Allow resubmission -->
+                        <button onclick="document.getElementById('resubmit-form').style.display = 'block'; this.style.display = 'none';" style="margin-top: 15px; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                            Update Submission
+                        </button>
+                    </div>
+
+                    <!-- Resubmit Form (Hidden by default) -->
+                    <div id="resubmit-form" style="display: none; margin-top: 20px;">
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data" {% if submission %}style="margin-top: 20px;"{% endif %}>
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">Upload File</label>
+                            <input type="file" name="submission_file" class="form-control" style="padding: 10px; width: 100%;">
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">Or Add Link</label>
+                            <input type="url" name="submission_link" class="form-control" placeholder="https://..." style="padding: 10px; width: 100%;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 20px; background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                        <i class="fa fa-paper-plane"></i> {% if submission %}Update Submission{% else %}Submit Assignment{% endif %}
+                    </button>
+                </form>
+
+                {% if submission %}
+                    </div> <!-- End of resubmit-form div -->
+                {% endif %}
+
             </div>
         </div>
 

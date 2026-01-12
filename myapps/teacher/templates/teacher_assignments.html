@@ -52,6 +52,7 @@
                             <span class="status-badge status-active">Live</span>
                         </td>
                         <td class="actions">
+                            <a href="{% url 'teacher_assignment_detail' assignment.id %}" title="View Submissions"><i class="fa fa-eye" style="color: var(--primary-color);"></i></a>
                             <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" title="View Gradebook"><i class="fa fa-table"></i></a>
                             <a href="{% url 'teacher_edit_assignment' assignment.id %}" class="edit" title="Edit Assignment"><i class="fa fa-pen"></i></a>
                             <a href="{% url 'teacher_delete_assignment' assignment.id %}" class="delete" title="Delete Assignment"><i class="fa fa-trash"></i></a>

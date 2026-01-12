@@ -24,3 +24,16 @@ class Grade(models.Model):
     def __str__(self):
         return f"{self.student.username}: {self.score}/{self.assignment.max_score} for {self.assignment.title}"
 
+class StudentSubmission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey('accounts.User', on_delete=models.CASCADE, limit_choices_to={'role': 'student'}, related_name='submissions')
+    submission_file = models.FileField(upload_to='submissions/%Y/%m/%d/', null=True, blank=True)
+    submission_link = models.URLField(null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('assignment', 'student')
+
+    def __str__(self):
+        return f"Submission by {self.student.get_full_name()} for {self.assignment.title}"
+

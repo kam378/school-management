@@ -17,9 +17,14 @@ def teacher_dashboard(request):
         return redirect('login')
     
     classes = ClassSubject.objects.filter(teacher=request.user)
+    
+    # Check if teacher is a homeroom teacher
+    homeroom_class = Classroom.objects.filter(homeroom_teacher=request.user).first()
+    
     context = {
         'total_classes': classes.count(),
         'recent_assignments': Assignment.objects.filter(class_subject__teacher=request.user).order_by('-created_at')[:5],
+        'homeroom_class': homeroom_class,
     }
     return render(request, 'teacher_dashboard.html', context)
 
@@ -30,6 +35,35 @@ def teacher_classes(request):
     
     classes = ClassSubject.objects.filter(teacher=request.user)
     return render(request, 'teacher_classes.html', {'classes': classes})
+
+@login_required
+def teacher_homeroom_class(request):
+    """View for homeroom class roster with quick access to student details"""
+    if not teacher_check(request.user):
+        return redirect('login')
+    
+    homeroom_class = get_object_or_404(Classroom, homeroom_teacher=request.user)
+    students = homeroom_class.students.all().order_by('first_name', 'last_name')
+    
+    # Get attendance stats for each student
+    from myapps.attendances.models import StudentAttendance
+    student_data = []
+    for student in students:
+        total_days = StudentAttendance.objects.filter(student=student).count()
+        present_days = StudentAttendance.objects.filter(student=student, status='present').count()
+        attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+        
+        student_data.append({
+            'student': student,
+            'attendance_rate': round(attendance_rate, 1),
+            'total_days': total_days
+        })
+    
+    context = {
+        'homeroom_class': homeroom_class,
+        'student_data': student_data,
+    }
+    return render(request, 'teacher_homeroom_class.html', context)
 
 @login_required
 def gradebook_view(request, class_subject_id):
@@ -239,3 +273,122 @@ def teacher_profile(request):
         'profile_form': profile_form,
         'password_form': password_form
     })
+
+@login_required
+def teacher_assignment_detail(request, assignment_id):
+    """View details of an assignment and student submissions"""
+    if not teacher_check(request.user):
+        return redirect('login')
+    
+    assignment = get_object_or_404(Assignment, id=assignment_id, class_subject__teacher=request.user)
+    submissions = assignment.submissions.all().select_related('student')
+    
+    # Get all students in the class to check for missing submissions
+    all_students = assignment.class_subject.classroom.students.all().order_by('first_name', 'last_name')
+    
+    # Map submissions by student ID for easy lookup
+    submission_map = {sub.student.id: sub for sub in submissions}
+    
+    student_status = []
+    for student in all_students:
+        submission = submission_map.get(student.id)
+        # Get grade if exists
+        grade = Grade.objects.filter(assignment=assignment, student=student).first()
+        
+        student_status.append({
+            'student': student,
+            'submission': submission,
+            'grade': grade,
+            'status': 'Submitted' if submission else 'Pending'
+        })
+
+    return render(request, 'teacher_assignment_detail.html', {
+        'assignment': assignment,
+        'student_status': student_status
+    })
+
+@login_required
+def teacher_student_detail(request, student_id):
+    """
+    View student details with permission-based access:
+    - Homeroom teachers: Full academic history + attendance
+    - Regular teachers: Only grades for subjects they teach
+    """
+    if not teacher_check(request.user):
+        return redirect('login')
+    
+    from myapps.accounts.models import User
+    from myapps.attendances.models import StudentAttendance
+    from django.db.models import Count, Q
+    
+    student = get_object_or_404(User, id=student_id, role='student')
+    
+    # Check if teacher is the homeroom teacher
+    is_homeroom_teacher = Classroom.objects.filter(
+        students=student,
+        homeroom_teacher=request.user
+    ).exists()
+    
+    # Check if teacher teaches this student in any subject
+    teaches_student = ClassSubject.objects.filter(
+        teacher=request.user,
+        classroom__students=student
+    ).exists()
+    
+    if not is_homeroom_teacher and not teaches_student:
+        messages.error(request, "You don't have permission to view this student's details.")
+        return redirect('teacher_dashboard')
+    
+    # Get student's classroom
+    classroom = Classroom.objects.filter(students=student).first()
+    
+    # Attendance data (only for homeroom teachers)
+    attendance_data = None
+    if is_homeroom_teacher:
+        total_days = StudentAttendance.objects.filter(student=student).count()
+        present_days = StudentAttendance.objects.filter(student=student, status='present').count()
+        attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+        recent_attendance = StudentAttendance.objects.filter(student=student).order_by('-date')[:10]
+        
+        attendance_data = {
+            'total_days': total_days,
+            'present_days': present_days,
+            'attendance_rate': round(attendance_rate, 1),
+            'recent_records': recent_attendance
+        }
+    
+    # Grade data (filtered by permission)
+    if is_homeroom_teacher:
+        # Homeroom teacher sees ALL subjects
+        all_grades = Grade.objects.filter(student=student).select_related('assignment__class_subject__subject')
+    else:
+        # Regular teacher sees only their subjects
+        teacher_subjects = ClassSubject.objects.filter(teacher=request.user, classroom__students=student)
+        all_grades = Grade.objects.filter(
+            student=student,
+            assignment__class_subject__in=teacher_subjects
+        ).select_related('assignment__class_subject__subject')
+    
+    # Group grades by subject
+    grades_by_subject = {}
+    for grade in all_grades:
+        subject_name = grade.assignment.class_subject.subject.name
+        if subject_name not in grades_by_subject:
+            grades_by_subject[subject_name] = []
+        grades_by_subject[subject_name].append({
+            'assignment': grade.assignment.title,
+            'score': grade.score,
+            'max_score': grade.assignment.max_score,
+            'percentage': round((grade.score / grade.assignment.max_score * 100), 1) if grade.assignment.max_score > 0 else 0,
+            'graded_at': grade.graded_at
+        })
+    
+    context = {
+        'student': student,
+        'classroom': classroom,
+        'is_homeroom_teacher': is_homeroom_teacher,
+        'attendance_data': attendance_data,
+        'grades_by_subject': grades_by_subject,
+    }
+    
+    return render(request, 'teacher_student_detail.html', context)
