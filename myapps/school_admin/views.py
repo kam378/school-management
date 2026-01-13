@@ -9,12 +9,13 @@ from myapps.core.models import Notification
 
 from myapps.school_admin.models import (
     Announcement, SchoolSettings, GradeLevel, Subject, Classroom, 
-    ClassSubject, Timetable, CalendarEvent
+    ClassSubject, Timetable, CalendarEvent, GradeScale
 )
 from .forms import (
     CustomUserCreationForm, CustomUserChangeForm, AnnouncementForm, 
     SchoolSettingsForm, GradeLevelForm, SubjectForm, ClassroomForm, 
-    ClassSubjectForm, TimetableForm, AdminSetPasswordForm, CalendarEventForm, AdminProfileForm
+    ClassSubjectForm, TimetableForm, AdminSetPasswordForm, CalendarEventForm, 
+    AdminProfileForm, GradeScaleForm
 )
 from .utils import get_notifications
 from myapps.super_admin.utils import QuotaManager
@@ -443,13 +444,37 @@ def admin_settings(request):
       form = SchoolSettingsForm(instance=settings_obj)
 
   user_notifications_count = get_notifications(request.user)
+  grade_scales = GradeScale.objects.all()
+  grade_scale_form = GradeScaleForm()
 
   context = {
       'form': form,
+      'grade_scale_form': grade_scale_form,
+      'grade_scales': grade_scales,
       'settings': settings_obj,
       'user_notification_count': user_notifications_count,
   }
   return render(request, "admin_settings.html", context)
+
+def admin_add_grade_scale(request):
+    if not request.user.role == "school_admin":
+        return redirect("login")
+    
+    if request.method == "POST":
+        form = GradeScaleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Grade scale added successfully!")
+    return redirect("school_admin_settings")
+
+def admin_delete_grade_scale(request, id):
+    if not request.user.role == "school_admin":
+        return redirect("login")
+    
+    scale = get_object_or_404(GradeScale, id=id)
+    scale.delete()
+    messages.success(request, "Grade scale deleted.")
+    return redirect("school_admin_settings")
 
 # --- Academic Management ---
 

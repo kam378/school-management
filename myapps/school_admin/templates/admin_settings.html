@@ -132,6 +132,7 @@
             <div class="settings-sidebar">
                 <div class="settings-nav-item active" onclick="showTab('general')"><i class="fa fa-cog"></i> &nbsp; General Info</div>
                 <div class="settings-nav-item" onclick="showTab('features')"><i class="fa fa-layer-group"></i> &nbsp; Features</div>
+                <div class="settings-nav-item" onclick="showTab('grading')"><i class="fa fa-graduation-cap"></i> &nbsp; Grading & Exams</div>
                 <div class="settings-nav-item" onclick="showTab('security')"><i class="fa fa-lock"></i> &nbsp; Security</div>
             </div>
             
@@ -237,6 +238,94 @@
                         
                         <button type="submit" class="btn-save">Save Features</button>
                     </div>
+
+                    <!-- Grading Tab -->
+                    <div id="grading" class="settings-section">
+                        <h2 style="margin-top:0; color: var(--text-color);">Grading & Weightage</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 25px;">Define how grades are calculated and categorized.</p>
+                        
+                        <div style="background: var(--bg-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 30px;">
+                            <h4 style="margin-top:0;">Score Weightage</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+                                Set the percentage contribution for CASS and Exams. Total should equal 100%.
+                            </p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="form-group">
+                                    <label class="form-label">CASS Weight (%)</label>
+                                    {{ form.cass_weight }}
+                                    <small style="color: var(--text-muted);">Continuous Assessment average weight.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Exam Weight (%)</label>
+                                    {{ form.exam_weight }}
+                                    <small style="color: var(--text-muted);">Terminal Examination weight.</small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-save" style="margin-top:10px;">Save Weights</button>
+                        </div>
+
+                        <div style="background: var(--bg-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h4 style="margin-top:0;">Grading Scales</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+                                Define letter grades based on final weighted percentages.
+                            </p>
+                            
+                            <table class="premium-table" style="width:100%; margin-bottom: 20px; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                                        <th style="padding: 10px;">Label</th>
+                                        <th style="padding: 10px;">Min %</th>
+                                        <th style="padding: 10px;">GP</th>
+                                        <th style="padding: 10px; text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scale in grade_scales %}
+                                    <tr style="border-bottom: 1px solid var(--border-color);">
+                                        <td style="padding: 12px;">
+                                            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{ scale.color_code }}; margin-right: 5px;"></span>
+                                            <strong>{{ scale.label }}</strong>
+                                        </td>
+                                        <td style="padding: 12px;">{{ scale.min_percentage }}%</td>
+                                        <td style="padding: 12px;">{{ scale.grade_point }}</td>
+                                        <td style="padding: 12px; text-align: right;">
+                                            <a href="{% url 'admin_delete_grade_scale' scale.id %}" style="color: #ef4444; font-size: 0.9rem;" onclick="return confirm('Delete this grade scale?')">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" style="padding: 20px; text-align: center; color: var(--text-muted);">No grade scales defined yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <h5 style="margin-bottom: 15px;">Add New Grade Scale</h5>
+                            <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; border: 1px dashed var(--border-color);">
+                                <div id="scaleForm" style="display: grid; grid-template-columns: 1fr 1fr 1fr 0.5fr auto; gap: 10px; align-items: end;">
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size: 0.8rem;">Label</label>
+                                        <input type="text" name="label" class="form-control" placeholder="A" form="addScaleForm">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size: 0.8rem;">Min %</label>
+                                        <input type="number" name="min_percentage" step="0.01" class="form-control" placeholder="80" form="addScaleForm">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size: 0.8rem;">GP</label>
+                                        <input type="number" name="grade_point" step="0.01" class="form-control" placeholder="4.0" form="addScaleForm">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size: 0.8rem;">Color</label>
+                                        <input type="color" name="color_code" class="form-control" value="#4a90e2" style="padding: 2px; height: 42px;" form="addScaleForm">
+                                    </div>
+                                    <button type="submit" class="btn-save" style="margin:0; padding: 10px 20px;" form="addScaleForm">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Security Tab -->
                     <div id="security" class="settings-section">
@@ -248,6 +337,11 @@
                          </div>
                     </div>
                     
+                </form>
+                
+                <!-- Hidden form for adding grade scales (to avoid nested forms) -->
+                <form id="addScaleForm" method="POST" action="{% url 'admin_add_grade_scale' %}">
+                    {% csrf_token %}
                 </form>
             </div>
         </div>

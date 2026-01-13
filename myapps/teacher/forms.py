@@ -4,10 +4,11 @@ from .models import Assignment, Grade
 class AssignmentForm(forms.ModelForm):
     class Meta:
         model = Assignment
-        fields = ['class_subject', 'title', 'description', 'max_score', 'due_date']
+        fields = ['class_subject', 'title', 'assignment_type', 'description', 'max_score', 'due_date']
         widgets = {
             'class_subject': forms.Select(attrs={'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Algebra Quiz 1'}),
+            'assignment_type': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'max_score': forms.NumberInput(attrs={'class': 'form-control'}),
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .forms import StudentProfileForm
-from myapps.school_admin.models import Announcement, Classroom, ClassSubject, Timetable
+from myapps.school_admin.models import Announcement, Classroom, ClassSubject, Timetable, SchoolSettings, GradeScale
 from myapps.teacher.models import Assignment, Grade
 from django.db.models import Avg
 
@@ -296,84 +296,73 @@ def student_report_card(request):
   # Get all class subjects for this classroom
   class_subjects = ClassSubject.objects.filter(classroom=classroom).select_related('subject', 'teacher')
   
+  # Get school settings for weightage
+  settings = SchoolSettings.objects.first()
+  cass_w = settings.cass_weight if settings else 40
+  exam_w = settings.exam_weight if settings else 60
+  
+  # Get all grade scales ordered by highest percentage first
+  grade_scales = list(GradeScale.objects.all().order_by('-min_percentage'))
+  
   # Group grades by subject with detailed breakdown
   grades_by_subject = {}
-  total_percentage = 0
+  total_final_percentage = 0
   subject_graded_count = 0
   
   for class_subject in class_subjects:
       # Get all grades for this subject
-      subject_grades = Grade.objects.filter(
+      all_grades = Grade.objects.filter(
           student=request.user,
           assignment__class_subject=class_subject
-      ).select_related('assignment').order_by('assignment__due_date')
+      ).select_related('assignment')
       
-      subject_percentage = 0
-      letter_grade = 'N/A'
+      cass_grades = [g for g in all_grades if g.assignment.assignment_type == 'cass']
+      exam_grades = [g for g in all_grades if g.assignment.assignment_type == 'exam']
+      
+      # Calculate CASS Percentage
+      cass_score = sum(g.score for g in cass_grades)
+      cass_max = sum(g.assignment.max_score for g in cass_grades)
+      cass_pct = (cass_score / cass_max * 100) if cass_max > 0 else 0
+      
+      # Calculate Exam Percentage
+      exam_score = sum(g.score for g in exam_grades)
+      exam_max = sum(g.assignment.max_score for g in exam_grades)
+      exam_pct = (exam_score / exam_max * 100) if exam_max > 0 else 0
+      
+      # Combined Weighted Percentage
+      # Formula: (CASS_AVG * CASS_W / 100) + (EXAM_AVG * EXAM_W / 100)
+      final_subject_pct = (cass_pct * cass_w / 100) + (exam_pct * exam_w / 100)
+      
+      letter_grade = 'F'
       grade_point = 0.0
-      total_score = 0
-      total_max = 0
+      badge_color = '#dc3545'
       
-      if subject_grades.exists():
-          # Calculate average for this subject
-          total_score = sum(g.score for g in subject_grades)
-          total_max = sum(g.assignment.max_score for g in subject_grades)
-          subject_percentage = (total_score / total_max * 100) if total_max > 0 else 0
-          
-          # Determine letter grade
-          if subject_percentage >= 90:
-              letter_grade = 'A+'
-              grade_point = 4.0
-          elif subject_percentage >= 85:
-              letter_grade = 'A'
-              grade_point = 3.7
-          elif subject_percentage >= 80:
-              letter_grade = 'A-'
-              grade_point = 3.3
-          elif subject_percentage >= 75:
-              letter_grade = 'B+'
-              grade_point = 3.0
-          elif subject_percentage >= 70:
-              letter_grade = 'B'
-              grade_point = 2.7
-          elif subject_percentage >= 65:
-              letter_grade = 'B-'
-              grade_point = 2.3
-          elif subject_percentage >= 60:
-              letter_grade = 'C+'
-              grade_point = 2.0
-          elif subject_percentage >= 55:
-              letter_grade = 'C'
-              grade_point = 1.7
-          else:
-              letter_grade = 'F'
-              grade_point = 0.0
-          
-          total_percentage += subject_percentage
+      # Match against GradeScale
+      for scale in grade_scales:
+          if final_subject_pct >= float(scale.min_percentage):
+              letter_grade = scale.label
+              grade_point = float(scale.grade_point)
+              badge_color = scale.color_code
+              break
+      
+      if all_grades.exists():
+          grades_by_subject[class_subject.id] = {
+              'subject': class_subject.subject.name,
+              'teacher': class_subject.teacher.get_full_name() if class_subject.teacher else "TBA",
+              'cass_pct': round(cass_pct, 1),
+              'exam_pct': round(exam_pct, 1),
+              'final_pct': round(final_subject_pct, 1),
+              'letter_grade': letter_grade,
+              'grade_point': grade_point,
+              'badge_color': badge_color,
+          }
+          total_final_percentage += final_subject_pct
           subject_graded_count += 1
-      
-      grades_by_subject[class_subject.subject.name] = {
-          'teacher': class_subject.teacher.get_full_name() if class_subject.teacher else "N/A",
-          'letter_grade': letter_grade,
-          'percentage': round(subject_percentage, 1) if subject_grades.exists() else 0,
-          'grade_point': grade_point,
-          'assignment_count': subject_grades.count(),
-          'total_score': total_score,
-          'total_max': total_max,
-          'has_grades': subject_grades.exists()
-      }
   
-  # Calculate overall GPA
-  overall_percentage = (total_percentage / subject_graded_count) if subject_graded_count > 0 else 0
-  if overall_percentage >= 90: overall_gpa = 4.0
-  elif overall_percentage >= 85: overall_gpa = 3.7
-  elif overall_percentage >= 80: overall_gpa = 3.3
-  elif overall_percentage >= 75: overall_gpa = 3.0
-  elif overall_percentage >= 70: overall_gpa = 2.7
-  elif overall_percentage >= 65: overall_gpa = 2.3
-  elif overall_percentage >= 60: overall_gpa = 2.0
-  elif subject_graded_count > 0: overall_gpa = 1.0
-  else: overall_gpa = 0.0
+  # Calculate overall GPA based on subject grade points
+  overall_gp_sum = sum(data['grade_point'] for data in grades_by_subject.values())
+  overall_gpa = (overall_gp_sum / subject_graded_count) if subject_graded_count > 0 else 0
+  overall_percentage = (total_final_percentage / subject_graded_count) if subject_graded_count > 0 else 0
   
   # Get attendance summary
   total_days = StudentAttendance.objects.filter(student=request.user).count()
@@ -393,12 +382,14 @@ def student_report_card(request):
   context = {
       'school_name': tenant_name,
       'grades_by_subject': grades_by_subject,
-      'overall_gpa': overall_gpa,
+      'overall_gpa': round(overall_gpa, 2),
       'overall_percentage': round(overall_percentage, 1),
       'total_subjects': class_subjects.count(),
       'classroom': classroom,
       'attendance_summary': attendance_summary,
-      'report_date': timezone.now()
+      'report_date': timezone.now(),
+      'cass_weight': cass_w,
+      'exam_weight': exam_w,
   }
   
   return render(request, "student_report_card.html", context)

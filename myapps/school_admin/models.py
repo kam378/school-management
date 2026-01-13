@@ -30,15 +30,35 @@ class SchoolSettings(models.Model):
     secondary_color = models.CharField(max_length=20, default="#2c3e50")
     is_dark_mode = models.BooleanField(default=False)
     logo = models.ImageField(upload_to='school_logos/', blank=True, null=True)
-
+    # Grading Settings
+    cass_weight = models.PositiveIntegerField(default=40, help_text="Weight percentage for Continuous Assessment (0-100)")
+    exam_weight = models.PositiveIntegerField(default=60, help_text="Weight percentage for Exams (0-100)")
+    
     def save(self, *args, **kwargs):
         if not self.pk and SchoolSettings.objects.exists():
             # If you try to save a new instance, but one exists, update the existing one
             return SchoolSettings.objects.first()
+        # Ensure weights add up to 100 or handle validation? 
+        # For now, we'll just allow setting them.
         return super(SchoolSettings, self).save(*args, **kwargs)
 
     def __str__(self):
         return "School Settings"
+
+class GradeScale(models.Model):
+    """Custom grading scale defined by the school admin"""
+    label = models.CharField(max_length=10, help_text="e.g., A, B+, C")
+    min_percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Minimum percentage required for this grade")
+    grade_point = models.DecimalField(max_digits=3, decimal_places=2, help_text="GP value (e.g., 4.0)")
+    color_code = models.CharField(max_length=20, default="#1e293b", help_text="Hex color for UI badges")
+
+    class Meta:
+        ordering = ['-min_percentage']
+        verbose_name = "Grade Scale"
+        verbose_name_plural = "Grade Scales"
+
+    def __str__(self):
+        return f"{self.label} ({self.min_percentage}%)"
 
 class GradeLevel(models.Model):
     name = models.CharField(max_length=50)

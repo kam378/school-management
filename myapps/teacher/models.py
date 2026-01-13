@@ -6,6 +6,11 @@ class Assignment(models.Model):
     description = models.TextField(blank=True)
     max_score = models.PositiveIntegerField(default=100)
     due_date = models.DateTimeField()
+    TYPE_CHOICES = [
+        ('cass', 'Continuous Assessment (CASS)'),
+        ('exam', 'Examination'),
+    ]
+    assignment_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='cass', help_text="Categorize as CASS or Exam for weightage")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

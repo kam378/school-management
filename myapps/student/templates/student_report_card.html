@@ -415,35 +415,31 @@
             <table class="academic-table">
                 <thead>
                     <tr>
-                        <th style="width: 40%">Course Definition</th>
-                        <th style="text-align: center;">Credits</th>
-                        <th style="text-align: center;">Raw Score</th>
-                        <th style="text-align: center;">Weight %</th>
+                        <th style="width: 35%">Course Definition</th>
+                        <th style="text-align: center;">CASS ({{ cass_weight }}%)</th>
+                        <th style="text-align: center;">Exam ({{ exam_weight }}%)</th>
+                        <th style="text-align: center;">Final %</th>
                         <th style="text-align: center;">Grade</th>
                         <th style="text-align: center;">GP</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for subject_name, subject_data in grades_by_subject.items %}
+                    {% for subject_id, subject_data in grades_by_subject.items %}
                     <tr>
                         <td>
                             <div class="subject-main">
-                                <span class="subject-name">{{ subject_name }}</span>
+                                <span class="subject-name">{{ subject_data.subject }}</span>
                                 <span class="instructor">{{ subject_data.teacher }}</span>
                             </div>
                         </td>
-                        <td style="text-align: center; color: var(--report-silver);">1.0</td>
-                        <td style="text-align: center;">
-                            {% if subject_data.has_grades %}{{ subject_data.total_score }}{% else %}-{% endif %}
-                        </td>
-                        <td style="text-align: center; font-weight: 600;">
-                            {% if subject_data.has_grades %}{{ subject_data.percentage }}%{% else %}N/A{% endif %}
-                        </td>
+                        <td style="text-align: center; color: var(--report-silver);">{{ subject_data.cass_pct }}%</td>
+                        <td style="text-align: center; color: var(--report-silver);">{{ subject_data.exam_pct }}%</td>
+                        <td style="text-align: center; font-weight: 600;">{{ subject_data.final_pct }}%</td>
                         <td style="text-align: center;">
                             <span class="grade-badge-premium" style="
-                                background: {% if subject_data.percentage >= 90 %}#f0fdf4{% elif subject_data.percentage >= 75 %}#eff6ff{% elif subject_data.percentage >= 50 %}#fffbeb{% else %}#fef2f2{% endif %};
-                                color: {% if subject_data.percentage >= 90 %}#166534{% elif subject_data.percentage >= 75 %}#1e40af{% elif subject_data.percentage >= 50 %}#92400e{% else %}#991b1b{% endif %};
-                                border: 1px solid currentColor;
+                                background: {{ subject_data.badge_color }}15;
+                                color: {{ subject_data.badge_color }};
+                                border: 1px solid {{ subject_data.badge_color }};
                             ">
                                 {{ subject_data.letter_grade }}
                             </span>

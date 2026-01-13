@@ -56,7 +56,9 @@
                         <th style="min-width: 120px; text-align: center;">
                             <a href="{% url 'teacher_assignment_detail' assignment.id %}" style="text-decoration: none; color: inherit;">
                                 {{ assignment.title }}
-                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Max: {{ assignment.max_score }}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">
+                                    {{ assignment.get_assignment_type_display }} | Max: {{ assignment.max_score }}
+                                </div>
                             </a>
                         </th>
                         {% empty %}

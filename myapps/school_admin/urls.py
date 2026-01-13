@@ -16,6 +16,8 @@ urlpatterns = [
     path('notification/<int:id>/', views.admin_single_notification, name="school_admin_single_notification"),
     path('analytics', views.admin_analytics, name="school_admin_analytics"),
     path('settings', views.admin_settings, name="school_admin_settings"),
+    path('settings/grade-scale/add', views.admin_add_grade_scale, name="admin_add_grade_scale"),
+    path('settings/grade-scale/delete/<int:id>', views.admin_delete_grade_scale, name="admin_delete_grade_scale"),
     
     # Academic Management
     path('academic/', views.admin_academic_overview, name='admin_academic_overview'),

@@ -1,7 +1,18 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
-from .models import GradeLevel, Subject, Classroom, ClassSubject, Timetable, SchoolSettings, Announcement, CalendarEvent
+from .models import GradeLevel, Subject, Classroom, ClassSubject, Timetable, SchoolSettings, Announcement, CalendarEvent, GradeScale
 from myapps.accounts.models import User
+
+class GradeScaleForm(forms.ModelForm):
+    class Meta:
+        model = GradeScale
+        fields = ['label', 'min_percentage', 'grade_point', 'color_code']
+        widgets = {
+            'label': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. A, B+, C'}),
+            'min_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'grade_point': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'color_code': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+        }
 
 class AdminSetPasswordForm(SetPasswordForm):
     def __init__(self, *args, **kwargs):
@@ -123,7 +134,8 @@ class SchoolSettingsForm(forms.ModelForm):
         model = SchoolSettings
         fields = ['school_name', 'address', 'email', 'phone', 
                   'enable_whiteboard', 'enable_chat', 'enable_attendance',
-                  'primary_color', 'secondary_color', 'is_dark_mode', 'logo']
+                  'primary_color', 'secondary_color', 'is_dark_mode', 'logo',
+                  'cass_weight', 'exam_weight']
         widgets = {
             'school_name': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -131,6 +143,8 @@ class SchoolSettingsForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'primary_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'secondary_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+            'cass_weight': forms.NumberInput(attrs={'class': 'form-control'}),
+            'exam_weight': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
 class AdminProfileForm(forms.ModelForm):
