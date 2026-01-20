@@ -34,7 +34,7 @@ body {
     z-index: 100;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: thin; /* Firefox */
+    /* scrollbar-width: thin;  */
 }
 
 /* Custom Scrollbar for Webkit */
@@ -45,13 +45,10 @@ body {
     background: transparent;
 }
 .sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--primary-color);
     border-radius: 3px;
     border: 2px solid transparent;
     background-clip: content-box;
-}
-.sidebar:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-header {

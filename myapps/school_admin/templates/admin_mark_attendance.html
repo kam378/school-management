@@ -51,7 +51,7 @@
 
         {% if selected_classroom_id %}
         <div class="card" style="padding: 0; overflow: hidden;">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--card-bg);">
                 <h3 style="margin: 0;">Marking List: {{ selected_date }}</h3>
                 <span class="status-badge status-active">{{ students|length }} Students</span>
             </div>
@@ -113,7 +113,7 @@
                     </tbody>
                 </table>
                 
-                <div style="padding: 20px; background: #fdfdfd; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <div style="padding: 20px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
                     <button type="submit" class="btn-submit" style="width: auto; padding: 12px 30px;">
                         <i class="fa fa-save"></i> Save Attendance Records
                     </button>
