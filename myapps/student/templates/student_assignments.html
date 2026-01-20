@@ -32,7 +32,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                     <div>
                         <h3 style="margin: 0 0 5px; color: var(--text-color);">{{ assignment.title }}</h3>
-                        <small style="color: var(--text-muted);"><i class="fa fa-book"></i> {{ assignment.class_subject.subject.name }}</small>
+                        <div style="font-size:0.85rem; color: var(--text-muted);">
+                            <span style="font-weight:600; color: var(--primary-color);">{{ assignment.get_activity_type_display }}</span> &nbsp;•&nbsp;
+                            <i class="fa fa-book"></i> {{ assignment.class_subject.subject.name }}
+                        </div>
                     </div>
                     <!-- Status is simplified since we don't have submission tracking yet -->
                     <span style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Active</span>

@@ -47,10 +47,17 @@ def teacher_homeroom_class(request):
     
     # Get attendance stats for each student
     from myapps.attendances.models import StudentAttendance
+    from myapps.school_admin.models import Term
+    active_term = Term.objects.filter(is_active=True).first()
+    
     student_data = []
     for student in students:
-        total_days = StudentAttendance.objects.filter(student=student).count()
-        present_days = StudentAttendance.objects.filter(student=student, status='present').count()
+        attendance_qs = StudentAttendance.objects.filter(student=student)
+        if active_term:
+            attendance_qs = attendance_qs.filter(term=active_term)
+            
+        total_days = attendance_qs.count()
+        present_days = attendance_qs.filter(status='present').count()
         attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
         
         student_data.append({
@@ -112,6 +119,13 @@ def teacher_add_assignment(request):
     if not teacher_check(request.user):
         return redirect('login')
     
+    from myapps.school_admin.models import Term
+    active_term = Term.objects.filter(is_active=True).first()
+    
+    if not active_term:
+        messages.error(request, "No active academic term found. Please contact the administrator.")
+        return redirect('teacher_assignments')
+    
     if request.method == 'POST':
         form = AssignmentForm(request.POST, teacher=request.user)
         if form.is_valid():
@@ -139,12 +153,19 @@ def enter_grade(request):
             assignment_id = request.POST.get('assignment_id')
             score = request.POST.get('score', '').strip()
             
-            # Validate inputs
             if not student_id or not assignment_id:
                 return JsonResponse({'success': False, 'error': 'Missing required fields'})
             
+            from myapps.school_admin.models import Term
+            if not Term.objects.filter(is_active=True).exists():
+                return JsonResponse({'success': False, 'error': 'Cannot grade: No active term found.'})
+            
             # Get the assignment and verify teacher owns it
             assignment = get_object_or_404(Assignment, id=assignment_id, class_subject__teacher=request.user)
+            
+            # Verify student belongs to the class
+            if not assignment.class_subject.classroom.students.filter(id=student_id).exists():
+                return JsonResponse({'success': False, 'error': 'Student not found in this class'})
             
             # Handle empty score (delete grade)
             if score == '' or score == '-':

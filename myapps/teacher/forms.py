@@ -4,15 +4,43 @@ from .models import Assignment, Grade
 class AssignmentForm(forms.ModelForm):
     class Meta:
         model = Assignment
-        fields = ['class_subject', 'title', 'assignment_type', 'description', 'max_score', 'due_date']
+        # Exclude category and is_interactive as they are derived from activity_type
+        fields = ['class_subject', 'title', 'activity_type', 'description', 'max_score', 'due_date']
         widgets = {
             'class_subject': forms.Select(attrs={'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Algebra Quiz 1'}),
-            'assignment_type': forms.Select(attrs={'class': 'form-control'}),
+            'activity_type': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'max_score': forms.NumberInput(attrs={'class': 'form-control'}),
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+    
+    def save(self, commit=True):
+        instance = super(AssignmentForm, self).save(commit=False)
+        
+        # Auto-configure based on type
+        # Exams are separate category
+        if instance.activity_type == 'exam':
+            instance.category = 'exam'
+            instance.is_interactive = False
+        # Tests/Quizzes are CASS but non-interactive
+        elif instance.activity_type in ['test', 'quiz']:
+            instance.category = 'cass'
+            instance.is_interactive = False
+        # Assignments are CASS and interactive
+        else:
+            instance.category = 'cass'
+            instance.is_interactive = True
+            
+        # Link current term
+        from myapps.school_admin.models import Term
+        active_term = Term.objects.filter(is_active=True).first()
+        if active_term:
+            instance.term = active_term
+            
+        if commit:
+            instance.save()
+        return instance
 
     def __init__(self, *args, **kwargs):
         teacher = kwargs.pop('teacher', None)

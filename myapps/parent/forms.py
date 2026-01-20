@@ -16,7 +16,7 @@ class ParentProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['children'].queryset = User.objects.filter(children_role='student') # Wait, previously filter(role='student')
+        self.fields['children'].queryset = User.objects.filter(role='student')
         self.fields['children'].label_from_instance = lambda obj: f"{obj.get_full_name()} ({obj.custom_id})"
 
 class ParentUserForm(forms.ModelForm):

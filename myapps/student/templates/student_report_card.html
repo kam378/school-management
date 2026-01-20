@@ -339,18 +339,45 @@
     {% include "student_aside.html" %}
 
     <main class="main-content">
-        <div class="header-bar no-print" style="max-width: 1100px; margin: 0 auto 30px; background: transparent; padding: 0;">
+        <div class="header-bar no-print" style="max-width: 1100px; margin: 0 auto 30px; background: transparent; padding: 0; display: flex; justify-content: space-between; align-items: center;">
             <a href="{% url 'student_grades' %}" style="color: var(--report-blue); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                 <i class="fa fa-chevron-left"></i> Return to Portal
             </a>
-            <button onclick="window.print()" class="print-btn">
-                <i class="fa fa-print"></i> Generate Transcript
-            </button>
+            
+            <div style="display: flex; gap: 15px; align-items: center;">
+                {% if available_terms %}
+                <form method="GET" style="margin: 0;">
+                    <select name="term_id" onchange="this.form.submit()" style="padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; cursor: pointer;">
+                        {% for term in available_terms %}
+                            <option value="{{ term.id }}" {% if term.id == selected_term.id %}selected{% endif %}>
+                                {{ term.academic_year.name }} - {{ term.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
+                
+                <button onclick="window.print()" class="print-btn">
+                    <i class="fa fa-print"></i> Generate Transcript
+                </button>
+            </div>
         </div>
 
         <div class="report-card">
             <div class="watermark">{{ school_name|default:school_settings.school_name|default:"GRADUATED" }}</div>
             
+            {% if no_terms or not selected_term %}
+            <div style="text-align: center; padding: 100px 40px; position: relative; z-index: 1;">
+                <div style="width: 100px; height: 100px; background: rgba(15, 23, 42, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; color: var(--report-silver); font-size: 3rem;">
+                    <i class="fa fa-folder-open"></i>
+                </div>
+                <h2 style="font-family: 'Playfair Display', serif; color: var(--report-blue); margin-bottom: 15px;">No Academic Records Found</h2>
+                <p style="color: var(--report-silver); max-width: 500px; margin: 0 auto; line-height: 1.6;">
+                    The school administration has not published any term results or academic sessions yet. 
+                    Please check back later or contact the registrar's office.
+                </p>
+            </div>
+            {% else %}
             <div class="header-content">
                 <div class="school-branding">
                     <div style="display: flex; align-items: center; gap: 20px;">
@@ -388,8 +415,11 @@
                         <span class="value">{{ classroom.name|default:"Pending Assignment" }}</span>
                     </div>
                     <div class="field">
-                        <span class="label">Academic Year</span>
-                        <span class="value">2025 - 2026</span>
+                        <span class="label">Academic Period</span>
+                        <span class="value">
+                            {{ selected_term.academic_year.name|default:"-" }}
+                            <span style="font-weight: 400; font-size: 0.8em; opacity: 0.8;">| {{ selected_term.name|default:"All Terms" }}</span>
+                        </span>
                     </div>
                     <div class="field">
                         <span class="label">Lead Instructor / Form Teacher</span>
@@ -505,6 +535,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </main>
 

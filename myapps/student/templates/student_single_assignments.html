@@ -94,6 +94,7 @@
                     <div id="resubmit-form" style="display: none; margin-top: 20px;">
                 {% endif %}
 
+                {% if assignment.is_interactive %}
                 <form method="POST" enctype="multipart/form-data" {% if submission %}style="margin-top: 20px;"{% endif %}>
                     {% csrf_token %}
                     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -110,6 +111,11 @@
                         <i class="fa fa-paper-plane"></i> {% if submission %}Update Submission{% else %}Submit Assignment{% endif %}
                     </button>
                 </form>
+                {% else %}
+                <div style="padding: 20px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; color: #856404; margin-top: 20px;">
+                    <i class="fa fa-info-circle"></i> This is a non-interactive assessment (Test/Exam). Your teacher will enter your score directly.
+                </div>
+                {% endif %}
 
                 {% if submission %}
                     </div> <!-- End of resubmit-form div -->

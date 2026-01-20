@@ -19,6 +19,15 @@ urlpatterns = [
     path('settings/grade-scale/add', views.admin_add_grade_scale, name="admin_add_grade_scale"),
     path('settings/grade-scale/delete/<int:id>', views.admin_delete_grade_scale, name="admin_delete_grade_scale"),
     
+    # Session Management (Years & Terms)
+    path('settings/academic-year/add', views.admin_add_academic_year, name="admin_add_academic_year"),
+    path('settings/term/add', views.admin_add_term, name="admin_add_term"),
+    path('settings/academic-year/toggle-active/<int:id>', views.admin_toggle_year_active, name="admin_toggle_year_active"),
+    path('settings/term/toggle-active/<int:id>', views.admin_toggle_term_active, name="admin_toggle_term_active"),
+    path('settings/term/toggle-publish/<int:id>', views.admin_toggle_term_publish, name="admin_toggle_term_publish"),
+    path('settings/academic-year/delete/<int:id>', views.admin_delete_year, name="admin_delete_year"),
+    path('settings/term/delete/<int:id>', views.admin_delete_term, name="admin_delete_term"),
+    
     # Academic Management
     path('academic/', views.admin_academic_overview, name='admin_academic_overview'),
     path('academic/levels/', views.admin_manage_grade_levels, name='admin_manage_grade_levels'),

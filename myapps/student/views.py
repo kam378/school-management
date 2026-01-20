@@ -121,6 +121,10 @@ def student_single_assignment(request, id):
   submission = StudentSubmission.objects.filter(assignment=assignment, student=request.user).first()
   
   if request.method == 'POST':
+      if not assignment.is_interactive:
+          messages.error(request, "This assignment accepts no submissions.")
+          return redirect('student_single_assignment', id=id)
+
       submission_file = request.FILES.get('submission_file')
       submission_link = request.POST.get('submission_link')
       
@@ -297,6 +301,34 @@ def student_report_card(request):
   class_subjects = ClassSubject.objects.filter(classroom=classroom).select_related('subject', 'teacher')
   
   # Get school settings for weightage
+  # --- Term Logic ---
+  from myapps.school_admin.models import Term
+  from django.db.models import Q
+  
+  available_terms = Term.objects.filter(Q(is_published=True) | Q(is_active=True)).order_by('-id')
+  selected_term_id = request.GET.get('term_id')
+  selected_term = None
+  
+  if selected_term_id:
+      selected_term = Term.objects.filter(id=selected_term_id).first()
+  else:
+      selected_term = Term.objects.filter(is_active=True).first() or available_terms.first()
+
+  if not selected_term:
+      return render(request, "student_report_card.html", {
+          'school_name': tenant_name,
+          'grades_by_subject': {},
+          'overall_gpa': 0,
+          'classroom': classroom,
+          'attendance_summary': {
+              'total_days': 0, 'present_days': 0, 'late_days': 0, 'absent_days': 0, 'attendance_rate': 0
+          },
+          'total_subjects': 0,
+          'overall_percentage': 0,
+          'report_date': timezone.now(),
+          'no_terms': True # Flag for template
+      })
+
   settings = SchoolSettings.objects.first()
   cass_w = settings.cass_weight if settings else 40
   exam_w = settings.exam_weight if settings else 60
@@ -315,19 +347,26 @@ def student_report_card(request):
           student=request.user,
           assignment__class_subject=class_subject
       ).select_related('assignment')
+
+      if selected_term:
+          all_grades = all_grades.filter(assignment__term=selected_term)
       
-      cass_grades = [g for g in all_grades if g.assignment.assignment_type == 'cass']
-      exam_grades = [g for g in all_grades if g.assignment.assignment_type == 'exam']
+      # Filter by Term if selected
+      if selected_term:
+          all_grades = all_grades.filter(assignment__term=selected_term)
+      
+      cass_grades = [g for g in all_grades if g.assignment.category == 'cass']
+      exam_grades = [g for g in all_grades if g.assignment.category == 'exam']
       
       # Calculate CASS Percentage
       cass_score = sum(g.score for g in cass_grades)
       cass_max = sum(g.assignment.max_score for g in cass_grades)
-      cass_pct = (cass_score / cass_max * 100) if cass_max > 0 else 0
+      cass_pct = float(cass_score / cass_max * 100) if cass_max > 0 else 0.0
       
       # Calculate Exam Percentage
       exam_score = sum(g.score for g in exam_grades)
       exam_max = sum(g.assignment.max_score for g in exam_grades)
-      exam_pct = (exam_score / exam_max * 100) if exam_max > 0 else 0
+      exam_pct = float(exam_score / exam_max * 100) if exam_max > 0 else 0.0
       
       # Combined Weighted Percentage
       # Formula: (CASS_AVG * CASS_W / 100) + (EXAM_AVG * EXAM_W / 100)
@@ -365,10 +404,14 @@ def student_report_card(request):
   overall_percentage = (total_final_percentage / subject_graded_count) if subject_graded_count > 0 else 0
   
   # Get attendance summary
-  total_days = StudentAttendance.objects.filter(student=request.user).count()
-  present_days = StudentAttendance.objects.filter(student=request.user, status='present').count()
-  late_days = StudentAttendance.objects.filter(student=request.user, status='late').count()
-  absent_days = StudentAttendance.objects.filter(student=request.user, status='absent').count()
+  attendance_qs = StudentAttendance.objects.filter(student=request.user)
+  if selected_term:
+      attendance_qs = attendance_qs.filter(term=selected_term)
+      
+  total_days = attendance_qs.count()
+  present_days = attendance_qs.filter(status='present').count()
+  late_days = attendance_qs.filter(status='late').count()
+  absent_days = attendance_qs.filter(status='absent').count()
   attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
   
   attendance_summary = {
@@ -390,6 +433,8 @@ def student_report_card(request):
       'report_date': timezone.now(),
       'cass_weight': cass_w,
       'exam_weight': exam_w,
+      'available_terms': available_terms,
+      'selected_term': selected_term,
   }
   
   return render(request, "student_report_card.html", context)

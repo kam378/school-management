@@ -10,6 +10,7 @@ class StudentAttendance(models.Model):
     ]
 
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'role': 'student'}, related_name='attendance_records')
+    term = models.ForeignKey('school_admin.Term', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendance_records')
     date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
     notes = models.TextField(blank=True)
@@ -17,7 +18,7 @@ class StudentAttendance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('student', 'date')
+        unique_together = ('student', 'date', 'term')
         ordering = ['-date']
 
     def __str__(self):

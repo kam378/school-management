@@ -1,7 +1,31 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
-from .models import GradeLevel, Subject, Classroom, ClassSubject, Timetable, SchoolSettings, Announcement, CalendarEvent, GradeScale
+from .models import GradeLevel, Subject, Classroom, ClassSubject, Timetable, SchoolSettings, Announcement, CalendarEvent, GradeScale, AcademicYear, Term
 from myapps.accounts.models import User
+
+class AcademicYearForm(forms.ModelForm):
+    class Meta:
+        model = AcademicYear
+        fields = ['name', 'start_date', 'end_date', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024-2025'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class TermForm(forms.ModelForm):
+    class Meta:
+        model = Term
+        fields = ['name', 'academic_year', 'start_date', 'end_date', 'is_active', 'is_published']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Term 1'}),
+            'academic_year': forms.Select(attrs={'class': 'form-control'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
 class GradeScaleForm(forms.ModelForm):
     class Meta:

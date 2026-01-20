@@ -131,6 +131,7 @@
             <!-- Sidebar -->
             <div class="settings-sidebar">
                 <div class="settings-nav-item active" onclick="showTab('general')"><i class="fa fa-cog"></i> &nbsp; General Info</div>
+                <div class="settings-nav-item" onclick="showTab('sessions')"><i class="fa fa-calendar-alt"></i> &nbsp; Academic Sessions</div>
                 <div class="settings-nav-item" onclick="showTab('features')"><i class="fa fa-layer-group"></i> &nbsp; Features</div>
                 <div class="settings-nav-item" onclick="showTab('grading')"><i class="fa fa-graduation-cap"></i> &nbsp; Grading & Exams</div>
                 <div class="settings-nav-item" onclick="showTab('security')"><i class="fa fa-lock"></i> &nbsp; Security</div>
@@ -239,6 +240,139 @@
                         <button type="submit" class="btn-save">Save Features</button>
                     </div>
 
+
+                    <!-- Academic Sessions Tab -->
+                    <div id="sessions" class="settings-section">
+                        <h2 style="margin-top:0; color: var(--text-color);">Academic Sessions</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 25px;">Manage Academic Years and Terms. Only one Year and one Term can be active at a time.</p>
+                        
+                        <!-- Academic Years -->
+                        <div style="background: var(--bg-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 30px;">
+                            <h4 style="margin-top:0; display: flex; justify-content: space-between; align-items: center;">
+                                Academic Years
+                            </h4>
+                            <table class="premium-table" style="width:100%; margin-bottom: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for year in academic_years %}
+                                    <tr>
+                                        <td><strong>{{ year.name }}</strong></td>
+                                        <td>{{ year.start_date|default:"-" }}</td>
+                                        <td>{{ year.end_date|default:"-" }}</td>
+                                        <td>
+                                            {% if year.is_active %}
+                                                <span class="badge badge-success">Active</span>
+                                            {% else %}
+                                                <a href="{% url 'admin_toggle_year_active' year.id %}" class="btn-sm btn-outline-primary">Activate</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_delete_year' year.id %}" onclick="return confirm('Delete this year? This will cascade delete terms!')" style="color: red;"><i class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No Academic Years defined.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <!-- Add Year Form -->
+                            <h5 style="margin-bottom: 10px;">Add New Academic Year</h5>
+                             <div class="form-row" style="display: flex; gap: 10px; align-items: flex-end;">
+                                <div style="flex: 2;">
+                                    <label class="form-label" style="font-size: 0.8rem;">Name</label>
+                                    <input type="text" name="name" class="form-control" placeholder="2024-2025" form="addYearForm" required>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.8rem;">Start</label>
+                                    <input type="date" name="start_date" class="form-control" form="addYearForm">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.8rem;">End</label>
+                                    <input type="date" name="end_date" class="form-control" form="addYearForm">
+                                </div>
+                                <button type="submit" class="btn-save" style="margin:0; padding: 10px 20px;" form="addYearForm">Add</button>
+                            </div>
+                        </div>
+
+                        <!-- Terms -->
+                        <div style="background: var(--bg-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h4 style="margin-top:0;">Terms</h4>
+                            <table class="premium-table" style="width:100%; margin-bottom: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Year</th>
+                                        <th>Active</th>
+                                        <th>Published</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for term in terms %}
+                                    <tr>
+                                        <td><strong>{{ term.name }}</strong></td>
+                                        <td>{{ term.academic_year.name }}</td>
+                                        <td>
+                                            {% if term.is_active %}
+                                                <span class="badge badge-success">Current</span>
+                                            {% else %}
+                                                <a href="{% url 'admin_toggle_term_active' term.id %}" class="btn-sm btn-outline-primary" style="font-size: 0.8rem;">Set Current</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if term.is_published %}
+                                                <a href="{% url 'admin_toggle_term_publish' term.id %}" class="badge badge-success" style="text-decoration: none;">Yes</a>
+                                            {% else %}
+                                                <a href="{% url 'admin_toggle_term_publish' term.id %}" class="badge badge-warning" style="text-decoration: none;">No</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_delete_term' term.id %}" onclick="return confirm('Delete this term?')" style="color: red;"><i class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No Terms defined.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                             <!-- Add Term Form -->
+                            <h5 style="margin-bottom: 10px;">Add New Term</h5>
+                             <div class="form-row" style="display: flex; gap: 10px; align-items: flex-end;">
+                                <div style="flex: 2;">
+                                    <label class="form-label" style="font-size: 0.8rem;">Name</label>
+                                    <input type="text" name="name" class="form-control" placeholder="Term 1" form="addTermForm" required>
+                                </div>
+                                <div style="flex: 2;">
+                                    <label class="form-label" style="font-size: 0.8rem;">Year</label>
+                                    <select name="academic_year" class="form-control" form="addTermForm" required>
+                                        {% for year in academic_years %}
+                                            <option value="{{ year.id }}">{{ year.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.8rem;">Start</label>
+                                    <input type="date" name="start_date" class="form-control" form="addTermForm">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.8rem;">End</label>
+                                    <input type="date" name="end_date" class="form-control" form="addTermForm">
+                                </div>
+                                <button type="submit" class="btn-save" style="margin:0; padding: 10px 20px;" form="addTermForm">Add</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Grading Tab -->
                     <div id="grading" class="settings-section">
                         <h2 style="margin-top:0; color: var(--text-color);">Grading & Weightage</h2>
@@ -341,6 +475,12 @@
                 
                 <!-- Hidden form for adding grade scales (to avoid nested forms) -->
                 <form id="addScaleForm" method="POST" action="{% url 'admin_add_grade_scale' %}">
+                    {% csrf_token %}
+                </form>
+                <form id="addYearForm" method="POST" action="{% url 'admin_add_academic_year' %}">
+                    {% csrf_token %}
+                </form>
+                <form id="addTermForm" method="POST" action="{% url 'admin_add_term' %}">
                     {% csrf_token %}
                 </form>
             </div>

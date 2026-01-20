@@ -8,14 +8,14 @@ from django.db.models import Q
 from myapps.core.models import Notification
 
 from myapps.school_admin.models import (
-    Announcement, SchoolSettings, GradeLevel, Subject, Classroom, 
-    ClassSubject, Timetable, CalendarEvent, GradeScale
+    Announcement, SchoolSettings, GradeLevel, Subject, Classroom,
+    ClassSubject, Timetable, CalendarEvent, GradeScale, PromotionRecord, AcademicYear, Term
 )
 from .forms import (
-    CustomUserCreationForm, CustomUserChangeForm, AnnouncementForm, 
-    SchoolSettingsForm, GradeLevelForm, SubjectForm, ClassroomForm, 
-    ClassSubjectForm, TimetableForm, AdminSetPasswordForm, CalendarEventForm, 
-    AdminProfileForm, GradeScaleForm
+    SchoolSettingsForm, GradeScaleForm, GradeLevelForm, SubjectForm,
+    ClassroomForm, ClassSubjectForm, TimetableForm, AnnouncementForm,
+    CalendarEventForm, CustomUserCreationForm, CustomUserChangeForm,
+    AdminProfileForm, AcademicYearForm, TermForm
 )
 from .utils import get_notifications
 from myapps.super_admin.utils import QuotaManager
@@ -447,12 +447,19 @@ def admin_settings(request):
   grade_scales = GradeScale.objects.all()
   grade_scale_form = GradeScaleForm()
 
+  academic_years = AcademicYear.objects.all().order_by('-id')
+  terms = Term.objects.select_related('academic_year').all().order_by('-id')
+
   context = {
       'form': form,
       'grade_scale_form': grade_scale_form,
       'grade_scales': grade_scales,
       'settings': settings_obj,
       'user_notification_count': user_notifications_count,
+      'academic_years': academic_years,
+      'terms': terms,
+      'academic_year_form': AcademicYearForm(),
+      'term_form': TermForm(),
   }
   return render(request, "admin_settings.html", context)
 
@@ -1019,6 +1026,11 @@ def admin_mark_attendance(request):
     classrooms = Classroom.objects.all()
     students = []
     
+    from myapps.school_admin.models import Term
+    active_term = Term.objects.filter(is_active=True).first()
+    if not active_term:
+        messages.warning(request, "No active academic term found. Attendance marking is disabled until a term is activated in Academic Sessions settings.")
+    
     if selected_classroom_id:
         classroom = get_object_or_404(Classroom, id=selected_classroom_id)
         students = classroom.students.all()
@@ -1041,12 +1053,20 @@ def admin_mark_attendance(request):
         classroom = get_object_or_404(Classroom, id=classroom_id)
         classroom_students = classroom.students.all()
         
+        from myapps.school_admin.models import Term
+        active_term = Term.objects.filter(is_active=True).first()
+        
+        if not active_term:
+            messages.error(request, "Cannot mark attendance: No active academic term found.")
+            return redirect(f"{request.path}?classroom={classroom_id}&date={date}")
+
         for s in classroom_students:
             status = request.POST.get(f'status_{s.id}')
             if status:
                 StudentAttendance.objects.update_or_create(
                     student=s,
                     date=date,
+                    term=active_term,
                     defaults={'status': status, 'marked_by': request.user}
                 )
         
@@ -1057,6 +1077,8 @@ def admin_mark_attendance(request):
         'classrooms': classrooms,
         'selected_classroom_id': int(selected_classroom_id) if selected_classroom_id else None,
         'selected_date': selected_date,
+        'has_active_term': active_term is not None,
+        'active_term_name': active_term.name if active_term else None,
         'students': students,
         'user_notification_count': get_notifications(request.user)
     })
@@ -1093,3 +1115,101 @@ def admin_profile(request):
         'password_form': password_form,
         'user_notification_count': user_notifications_count
     })
+
+
+@login_required
+def admin_add_academic_year(request):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    
+    if request.method == "POST":
+        form = AcademicYearForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Academic Year created successfully.")
+        else:
+            messages.error(request, "Error creating academic year. Please check the dates.")
+            
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_add_term(request):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    
+    if request.method == "POST":
+        form = TermForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Term created successfully.")
+        else:
+            messages.error(request, "Error creating term.")
+            
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_toggle_year_active(request, id):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    
+    year = get_object_or_404(AcademicYear, id=id)
+    # Logic in model handles deactivating others if we set this to True
+    if not year.is_active:
+        year.is_active = True
+        year.save()
+        messages.success(request, f"{year.name} is now the Active Academic Year.")
+    else:
+        year.is_active = False
+        year.save()
+        messages.info(request, f"{year.name} deactivated.")
+        
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_toggle_term_active(request, id):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    
+    term = get_object_or_404(Term, id=id)
+    if not term.is_active:
+        term.is_active = True
+        term.save()
+        messages.success(request, f"{term.name} is now the Active Term.")
+    else:
+        term.is_active = False
+        term.save()
+        messages.info(request, f"{term.name} deactivated.")
+        
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_toggle_term_publish(request, id):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    
+    term = get_object_or_404(Term, id=id)
+    term.is_published = not term.is_published
+    term.save()
+    
+    status = "Published" if term.is_published else "Unpublished"
+    messages.success(request, f"Results for {term.name} are now {status}.")
+    
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_delete_year(request, id):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    year = get_object_or_404(AcademicYear, id=id)
+    year.delete()
+    messages.success(request, "Academic Year deleted.")
+    return redirect("school_admin_settings")
+
+@login_required
+def admin_delete_term(request, id):
+    if request.user.role != "school_admin":
+        return redirect("login")
+    term = get_object_or_404(Term, id=id)
+    term.delete()
+    messages.success(request, "Term deleted.")
+    return redirect("school_admin_settings")

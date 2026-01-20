@@ -6,11 +6,21 @@ class Assignment(models.Model):
     description = models.TextField(blank=True)
     max_score = models.PositiveIntegerField(default=100)
     due_date = models.DateTimeField()
-    TYPE_CHOICES = [
+    CATEGORY_CHOICES = [
         ('cass', 'Continuous Assessment (CASS)'),
         ('exam', 'Examination'),
     ]
-    assignment_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='cass', help_text="Categorize as CASS or Exam for weightage")
+    ACTIVITY_TYPE_CHOICES = [
+        ('assignment', 'Assignment (Interactive)'),
+        ('test', 'Test'),
+        ('quiz', 'Quiz'),
+        ('exam', 'Examination'),
+    ]
+    
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='cass', help_text="Weightage Category")
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPE_CHOICES, default='assignment', help_text="Specific type of activity")
+    term = models.ForeignKey('school_admin.Term', on_delete=models.SET_NULL, null=True, blank=True, related_name='assignments')
+    is_interactive = models.BooleanField(default=True, help_text="If True, students can submit files. If False, score-only.")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

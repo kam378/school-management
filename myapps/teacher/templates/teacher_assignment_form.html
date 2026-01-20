@@ -39,8 +39,11 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label class="form-label">Assignment Type (CASS or Exam)</label>
-                    {{ form.assignment_type }}
+                    <label class="form-label">Activity Type</label>
+                    {{ form.activity_type }}
+                    <small style="color: var(--text-muted);">
+                        Assignments, Tests, and Quizzes count as <strong>CASS</strong>. Exams are separate.
+                    </small>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">

@@ -61,8 +61,7 @@
                         <th>Status</th>
                         <th>Submission Details</th>
                         <th>Submitted At</th>
-                        <th>Current Grade</th>
-                        <th>Action</th>
+                        <th style="width: 150px;">Grade</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,17 +103,21 @@
                                 -
                             {% endif %}
                         </td>
-                        <td style="text-align: center;">
-                            {% if item.grade %}
-                                <span style="font-weight: 600; color: var(--primary-color);">{{ item.grade.score }}</span> / {{ assignment.max_score }}
-                            {% else %}
-                                <span style="color: var(--text-muted);">-</span>
-                            {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'teacher_gradebook' assignment.class_subject.id %}" class="btn-module" style="padding: 5px 10px; font-size: 0.8rem; margin: 0;">
-                                <i class="fa fa-edit"></i> Grade
-                            </a>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="number" 
+                                       class="form-control grade-input" 
+                                       data-student="{{ item.student.id }}"
+                                       data-assignment="{{ assignment.id }}"
+                                       value="{{ item.grade.score|default:'' }}"
+                                       placeholder="-"
+                                       min="0"
+                                       max="{{ assignment.max_score }}"
+                                       step="0.01"
+                                       style="width: 80px; padding: 5px; text-align: center;">
+                                <span class="save-status" id="status-{{ item.student.id }}" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -122,5 +125,48 @@
             </table>
         </div>
     </main>
+    </main>
+
+    <script>
+        document.querySelectorAll('.grade-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const studentId = this.dataset.student;
+                const assignmentId = this.dataset.assignment;
+                const score = this.value;
+                const statusEl = document.getElementById(`status-${studentId}`);
+                
+                statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+                
+                const formData = new FormData();
+                formData.append('student_id', studentId);
+                formData.append('assignment_id', assignmentId);
+                formData.append('score', score);
+                
+                fetch("{% url 'enter_grade' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusEl.innerHTML = '<i class="fa fa-check" style="color: #2ecc71;"></i>';
+                        setTimeout(() => { statusEl.innerHTML = ''; }, 2000);
+                        this.style.borderColor = '#2ecc71';
+                    } else {
+                        statusEl.innerHTML = '<i class="fa fa-times" style="color: #e74c3c;"></i>';
+                        alert(data.error);
+                        this.style.borderColor = '#e74c3c';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusEl.innerHTML = '<i class="fa fa-exclamation-triangle" style="color: #e74c3c;"></i>';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

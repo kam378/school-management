@@ -45,6 +45,38 @@ class SchoolSettings(models.Model):
     def __str__(self):
         return "School Settings"
 
+class AcademicYear(models.Model):
+    name = models.CharField(max_length=50, help_text="e.g. 2024-2025")
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=False, help_text="Set as current academic year")
+    
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Deactivate other years
+            AcademicYear.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class Term(models.Model):
+    name = models.CharField(max_length=50, help_text="e.g. First Term")
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='terms')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=False, help_text="Set as current active term for new data")
+    is_published = models.BooleanField(default=False, help_text="If checked, students can view results for this term")
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Deactivate other terms
+            Term.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.academic_year.name})"
+
 class GradeScale(models.Model):
     """Custom grading scale defined by the school admin"""
     label = models.CharField(max_length=10, help_text="e.g., A, B+, C")
