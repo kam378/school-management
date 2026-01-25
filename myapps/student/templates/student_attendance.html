@@ -15,16 +15,44 @@
 
     <main class="main-content">
         <div class="header-bar">
-            <div style="display: flex; align-items: center;">
-                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <div>
-                    <h1>My Attendance</h1>
-                    <p class="date">Track your attendance record</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center;">
+                    <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>My Attendance</h1>
+                        <p class="date">Track your attendance record {% if selected_term %}- {{ selected_term.name }} ({{ selected_term.academic_year.name }}){% endif %}</p>
+                    </div>
                 </div>
+
+                <!-- Term Selector -->
+                {% if available_terms %}
+                <form method="get" id="termSelectorForm" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="term_id" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">View Term:</label>
+                    <select name="term_id" id="term_id" class="form-control" onchange="this.form.submit()" style="padding: 8px 15px; border-radius: 8px; font-size: 0.85rem; min-width: 180px;">
+                        {% for term in available_terms %}
+                        <option value="{{ term.id }}" {% if selected_term and selected_term.id == term.id %}selected{% endif %}>
+                            {{ term.name }} ({{ term.academic_year.name }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
             </div>
         </div>
+
+        {% if not selected_term %}
+        <div style="text-align: center; padding: 100px 40px;">
+            <div style="width: 100px; height: 100px; background: rgba(15, 23, 42, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; color: var(--report-silver); font-size: 3rem;">
+                <i class="fa fa-folder-open"></i>
+            </div>
+            <h2>No Academic Term Found</h2>
+            <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">
+                There is no active or published academic term available at this time.
+            </p>
+        </div>
+        {% else %}
 
         <!-- Attendance Stats -->
         <div class="stats-grid" style="margin-bottom: 30px;">
@@ -32,7 +60,7 @@
                 <i class="fa fa-check-circle" style="font-size: 2rem; color: #2ecc71;"></i>
                 <div style="overflow: visible;">
                     <h3 style="color: var(--text-color);">Present</h3>
-                    <p class="value" style="color: var(--text-color);">142</p>
+                    <p class="value" style="color: var(--text-color);">{{ present_days }}</p>
                     <small style="color: var(--text-muted);">days</small>
                 </div>
             </div>
@@ -40,7 +68,7 @@
                 <i class="fa fa-times-circle" style="font-size: 2rem; color: #e74c3c;"></i>
                 <div style="overflow: visible;">
                     <h3 style="color: var(--text-color);">Absent</h3>
-                    <p class="value" style="color: var(--text-color);">8</p>
+                    <p class="value" style="color: var(--text-color);">{{ absent_days }}</p>
                     <small style="color: var(--text-muted);">days</small>
                 </div>
             </div>
@@ -48,14 +76,16 @@
                 <i class="fa fa-percentage" style="font-size: 2rem; color: var(--primary-color);"></i>
                 <div style="overflow: visible;">
                     <h3 style="color: var(--text-color);">Attendance Rate</h3>
-                    <p class="value" style="color: var(--text-color);">94.7%</p>
-                    <small style="color: var(--text-muted);">Excellent!</small>
+                    <p class="value" style="color: var(--text-color);">{{ attendance_rate }}%</p>
+                    <small style="color: var(--text-muted);">
+                        {% if attendance_rate >= 90 %}Excellent!{% elif attendance_rate >= 75 %}Good Record{% else %}Needs Improvement{% endif %}
+                    </small>
                 </div>
             </div>
         </div>
 
-        <!-- Monthly Attendance -->
-        <h2 style="margin-bottom: 20px; color: var(--text-color);">Monthly Record</h2>
+        <!-- Attendance Record Table -->
+        <h2 style="margin-bottom: 20px; color: var(--text-color);">Daily Record: {{ selected_term.name }}</h2>
         <table class="premium-table">
             <thead>
                 <tr>
@@ -66,44 +96,33 @@
                 </tr>
             </thead>
             <tbody>
+                {% for record in attendance_records %}
                 <tr>
-                    <td data-label="Date">June 19, 2023</td>
-                    <td data-label="Day">Monday</td>
-                    <td data-label="Status"><span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-check"></i> Present</span></td>
-                    <td data-label="Remarks">-</td>
+                    <td data-label="Date">{{ record.date|date:"F j, Y" }}</td>
+                    <td data-label="Day">{{ record.date|date:"l" }}</td>
+                    <td data-label="Status">
+                        {% if record.status == 'present' %}
+                            <span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-check"></i> Present</span>
+                        {% elif record.status == 'absent' %}
+                            <span style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-times"></i> Absent</span>
+                        {% elif record.status == 'late' %}
+                            <span style="background: rgba(243, 156, 18, 0.15); color: #f39c12; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-clock"></i> Late</span>
+                        {% elif record.status == 'excused' %}
+                            <span style="background: rgba(127, 140, 141, 0.15); color: #7f8c8d; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-info-circle"></i> Excused</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Remarks">{{ record.notes|default:"-" }}</td>
                 </tr>
+                {% empty %}
                 <tr>
-                    <td data-label="Date">June 18, 2023</td>
-                    <td data-label="Day">Sunday</td>
-                    <td data-label="Status"><span style="background: var(--border-color); color: var(--text-muted); padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Weekend</span></td>
-                    <td data-label="Remarks">-</td>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        No attendance records found for this term.
+                    </td>
                 </tr>
-                <tr>
-                    <td data-label="Date">June 17, 2023</td>
-                    <td data-label="Day">Saturday</td>
-                    <td data-label="Status"><span style="background: var(--border-color); color: var(--text-muted); padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Weekend</span></td>
-                    <td data-label="Remarks">-</td>
-                </tr>
-                <tr>
-                    <td data-label="Date">June 16, 2023</td>
-                    <td data-label="Day">Friday</td>
-                    <td data-label="Status"><span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-check"></i> Present</span></td>
-                    <td data-label="Remarks">-</td>
-                </tr>
-                <tr>
-                    <td data-label="Date">June 15, 2023</td>
-                    <td data-label="Day">Thursday</td>
-                    <td data-label="Status"><span style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-times"></i> Absent</span></td>
-                    <td data-label="Remarks">Sick leave</td>
-                </tr>
-                <tr>
-                    <td data-label="Date">June 14, 2023</td>
-                    <td data-label="Day">Wednesday</td>
-                    <td data-label="Status"><span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-check"></i> Present</span></td>
-                    <td data-label="Remarks">-</td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
+        {% endif %}
 
     </main>
 

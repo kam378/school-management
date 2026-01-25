@@ -67,12 +67,16 @@ def chat_layout(request, room_name=None):
             except ValueError:
                 pass
 
+    from myapps.school_admin.models import SchoolSettings
+    settings = SchoolSettings.objects.first()
+
     return render(request, 'chat_system/chat_layout.html', {
         'contacts': contacts,
         'active_room': active_room,
         'chat_history': chat_history,
         'other_user': other_user,
         'user': user,
+        'school_settings': settings,
         'debug_role': user.role
     })
 

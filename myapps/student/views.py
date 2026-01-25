@@ -148,8 +148,22 @@ def student_single_assignment(request, id):
 def student_attendance(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
-  from myapps.attendances.models import StudentAttendance
+  from myapps.school_admin.models import Term, SchoolSettings
+  from django.db.models import Q
   
+  # Available terms: Published OR Active
+  available_terms = Term.objects.filter(
+      Q(is_published=True) | Q(is_active=True)
+  ).order_by('-id') 
+  
+  selected_term_id = request.GET.get('term_id')
+  selected_term = None
+  
+  if selected_term_id:
+      selected_term = Term.objects.filter(id=selected_term_id).first()
+  else:
+      selected_term = Term.objects.filter(is_active=True).first() or available_terms.first()
+
   # Multi-method classroom detection
   classroom = Classroom.objects.filter(students=request.user).first()
   if not classroom and hasattr(request.user, 'student_profile'):
@@ -159,12 +173,17 @@ def student_attendance(request):
 
   attendance_records = StudentAttendance.objects.filter(student=request.user).order_by('-date')
   
+  if selected_term:
+      attendance_records = attendance_records.filter(term=selected_term)
+  
   # Statistics
   total = attendance_records.count()
   present = attendance_records.filter(status='present').count()
   late = attendance_records.filter(status='late').count()
   absent = attendance_records.filter(status='absent').count()
   rate = (present / total * 100) if total > 0 else 0
+
+  settings = SchoolSettings.objects.first()
 
   context = {
       'classroom': classroom,
@@ -173,7 +192,10 @@ def student_attendance(request):
       'present_days': present,
       'late_days': late,
       'absent_days': absent,
-      'attendance_rate': round(rate, 1)
+      'attendance_rate': round(rate, 1),
+      'available_terms': available_terms,
+      'selected_term': selected_term,
+      'school_settings': settings
   }
   return render(request, "student_attendance.html", context)
 
