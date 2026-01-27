@@ -1,0 +1,266 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Locker | {{ school_settings.school_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hub-section {
+            margin-bottom: 50px;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .section-header i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        .section-header h2 { margin: 0; font-size: 1.5rem; }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .resource-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px var(--shadow-color);
+            border-color: var(--primary-color);
+        }
+
+        .resource-thumb {
+            height: 160px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        .resource-card.book .resource-thumb { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); }
+        .resource-card.video .resource-thumb { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+
+        .type-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            backdrop-filter: blur(4px);
+        }
+
+        .resource-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .resource-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--text-color);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .resource-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .action-area {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        .btn-view {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+        }
+        .btn-view:hover { opacity: 0.9; }
+        
+        .global-banner {
+            background: linear-gradient(to right, #f1c40f, #f39c12);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    {% include "student_aside.html" %}
+
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>Learning Locker</h1>
+                    <p class="date">Your personal hub for academic resources</p>
+                </div>
+            </div>
+            <form method="GET" style="display: flex; gap: 5px;">
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search your locker..." style="padding: 10px 20px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 250px; font-size: 0.9rem;">
+                <button type="submit" class="btn-view" style="width: auto; padding: 0 15px; border-radius: 30px;"><i class="fa fa-search"></i></button>
+                {% if request.GET.q %}
+                    <a href="?" class="btn-view" style="width: auto; padding: 0 15px; border-radius: 30px; background: rgba(0,0,0,0.05); color: var(--text-color);"><i class="fa fa-times"></i></a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Super Admin "Help" / Global Resources -->
+        {% if books %}
+        <div class="hub-section">
+            <div class="section-header">
+                <i class="fa fa-book"></i>
+                <h2>Essential Reading & Books</h2>
+            </div>
+            <div class="resource-grid">
+                {% for res in books %}
+                <div class="resource-card book">
+                    <div class="resource-thumb">
+                        <i class="fa fa-book-open"></i>
+                        {% if res.is_platform_global %}
+                            <span class="type-badge" style="background: #f1c40f;">Recommended</span>
+                        {% else %}
+                            <span class="type-badge">Class Book</span>
+                        {% endif %}
+                    </div>
+                    <div class="resource-content">
+                        <h3 class="resource-title">{{ res.title }}</h3>
+                        <p class="resource-desc">{{ res.description|truncatewords:15|default:"Required reading for your current academic level." }}</p>
+                        <div class="action-area">
+                            {% if res.file %}
+                                <a href="{{ res.file.url }}" target="_blank" class="btn-view"><i class="fa fa-download"></i> Download PDF</a>
+                            {% elif res.external_url %}
+                                <a href="{{ res.external_url }}" target="_blank" class="btn-view"><i class="fa fa-external-link"></i> View Online</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if videos %}
+        <div class="hub-section">
+            <div class="section-header">
+                <i class="fa fa-play-circle"></i>
+                <h2>Video Lessons</h2>
+            </div>
+            <div class="resource-grid">
+                {% for res in videos %}
+                <div class="resource-card video">
+                    <div class="resource-thumb">
+                        <i class="fa fa-play"></i>
+                        <span class="type-badge">Video</span>
+                    </div>
+                    <div class="resource-content">
+                        <h3 class="resource-title">{{ res.title }}</h3>
+                        <p class="resource-desc">{{ res.description|truncatewords:15|default:"Visual walkthrough and lesson breakdown." }}</p>
+                        <div class="action-area">
+                            {% if res.external_url %}
+                                <a href="{{ res.external_url }}" target="_blank" class="btn-view"><i class="fa fa-play"></i> Watch Lesson</a>
+                            {% elif res.file %}
+                                <a href="{{ res.file.url }}" target="_blank" class="btn-view"><i class="fa fa-file-video"></i> View Clip</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if materials %}
+        <div class="hub-section">
+            <div class="section-header">
+                <i class="fa fa-folder-open"></i>
+                <h2>Study Materials & Links</h2>
+            </div>
+            <div class="resource-grid">
+                {% for res in materials %}
+                <div class="resource-card">
+                    <div class="resource-thumb">
+                        <i class="fa fa-file-invoice"></i>
+                        <span class="type-badge">{{ res.get_resource_type_display }}</span>
+                    </div>
+                    <div class="resource-content">
+                        <h3 class="resource-title">{{ res.title }}</h3>
+                        <p class="resource-desc">{{ res.description|truncatewords:15|default:"Supplementary study guide or reference link." }}</p>
+                        <div class="action-area">
+                            {% if res.file %}
+                                <a href="{{ res.file.url }}" target="_blank" class="btn-view"><i class="fa fa-download"></i> Download</a>
+                            {% elif res.external_url %}
+                                <a href="{{ res.external_url }}" target="_blank" class="btn-view"><i class="fa fa-link"></i> Go to Link</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not books and not videos and not materials %}
+        <div style="text-align: center; padding: 100px 40px; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color);">
+            <i class="fa fa-box-open" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 20px; display: block;"></i>
+            <h2 style="color: var(--text-color);">Your locker is empty</h2>
+            <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">Your teachers and the school academy haven't shared any specific resources with you yet. Check back soon for study materials!</p>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+</html>

@@ -249,3 +249,45 @@ def system_settings(request):
         form = GlobalSettingsForm(instance=settings)
     
     return render(request, 'super_admin_settings.html', {'form': form, 'settings': settings})
+
+from .models import PlatformResource
+from .forms import PlatformResourceForm
+
+@user_passes_test(super_admin_check)
+def manage_platform_resources(request):
+    resources = PlatformResource.objects.all()
+    
+    q = request.GET.get('q', '').strip()
+    if q:
+        resources = resources.filter(Q(title__icontains=q) | Q(description__icontains=q))
+        
+    resources = resources.order_by('-created_at')
+    if request.method == 'POST':
+        form = PlatformResourceForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Global platform resource added successfully!")
+            return redirect('manage_platform_resources')
+    else:
+        form = PlatformResourceForm()
+    
+    return render(request, 'super_admin_resources.html', {
+        'resources': resources,
+        'form': form
+    })
+
+@user_passes_test(super_admin_check)
+def delete_platform_resource(request, pk):
+    resource = get_object_or_404(PlatformResource, pk=pk)
+    title = resource.title
+    resource.delete()
+    messages.warning(request, f"Global resource '{title}' has been deleted.")
+    return redirect('manage_platform_resources')
+
+@user_passes_test(super_admin_check)
+def toggle_theme(request):
+    settings, created = GlobalSetting.objects.get_or_create(pk=1)
+    settings.is_dark_mode = not settings.is_dark_mode
+    settings.save()
+    messages.success(request, f"Theme switched to {'Dark' if settings.is_dark_mode else 'Light'} mode.")
+    return redirect(request.META.get('HTTP_REFERER', 'super_admin_dashboard'))

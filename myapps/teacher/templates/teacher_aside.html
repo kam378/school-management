@@ -40,6 +40,11 @@
             </a>
         </li>
         <li>
+            <a href="{% url 'learning_locker:manage_resources' %}" class="{% if 'locker' in request.path %}active{% endif %}">
+                <i class="fa fa-vault"></i> Learning Locker
+            </a>
+        </li>
+        <li>
             <a href="{% url 'teacher_timetable' %}" class="{% if 'timetable' in request.path %}active{% endif %}">
                 <i class="fa fa-calendar-alt"></i> My Timetable
             </a>
@@ -79,7 +84,7 @@
             <div style="font-weight: 600;">{{ request.user.get_full_name|default:request.user.username }}</div>
             <div style="font-size: 0.8rem; color: #888;">{{ request.user.role|title }}</div>
         </div>
-        <a href="/logout/" style="margin-left: auto; color: #d9534f;" title="Logout">
+        <a href="{% url 'logout' %}" style="margin-left: auto; color: #d9534f;" title="Logout">
             <i class="fa fa-sign-out-alt"></i>
         </a>
     </div>

@@ -16,6 +16,7 @@ urlpatterns = [
     path('whiteboard/', include("myapps.whiteboard.urls")),
     path('chat/', include("myapps.chat_system.urls")),
     path('attendance/', include("myapps.attendances.urls")),
+    path('locker/', include("myapps.learning_locker.urls", namespace='learning_locker')),
 ]
 
 if settings.DEBUG:

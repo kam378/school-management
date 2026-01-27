@@ -25,21 +25,22 @@
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <p class="date" style="margin: 0;">Record and track student presence.</p>
                         {% if has_active_term %}
-                            <span class="badge badge-success" style="font-size: 0.7rem; padding: 4px 8px;">Active Term: {{ active_term_name }}</span>
+                            <span class="status-badge status-active" style="font-size: 0.75rem;">Term: {{ active_term_name }}</span>
                         {% else %}
-                            <span class="badge badge-error" style="font-size: 0.7rem; padding: 4px 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">No Active Term</span>
+                            <span class="status-badge status-inactive" style="font-size: 0.75rem;">No Active Term</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
+            {% include "admin_extra_btns.html" %}
         </div>
 
         <!-- Filter Bar -->
-        <div class="card" style="margin-bottom: 30px;">
+        <div class="card glass" style="margin-bottom: 30px; padding: 25px;">
             <form method="get" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Select Classroom</label>
-                    <select name="classroom" class="form-control" required>
+                <div style="flex: 1.5; min-width: 250px;">
+                    <label class="form-label" style="font-weight: 700; text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">Select Classroom</label>
+                    <select name="classroom" class="form-control" required style="background: var(--bg-color); border: 1px solid var(--border-color);">
                         <option value="">-- Choose Classroom --</option>
                         {% for classroom in classrooms %}
                         <option value="{{ classroom.id }}" {% if classroom.id == selected_classroom_id %}selected{% endif %}>{{ classroom.name }}</option>
@@ -47,20 +48,20 @@
                     </select>
                 </div>
                 <div style="flex: 1; min-width: 200px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Date</label>
-                    <input type="date" name="date" class="form-control" value="{{ selected_date }}" required>
+                    <label class="form-label" style="font-weight: 700; text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ selected_date }}" required style="background: var(--bg-color); border: 1px solid var(--border-color);">
                 </div>
-                <button type="submit" class="btn-add" style="height: 45px; background: var(--secondary-color); color: #fff;" {% if not has_active_term %}disabled title="Activate a term in Settings first"{% endif %}>
-                    <i class="fa fa-search"></i> Load Students
+                <button type="submit" class="btn-submit" style="height: 48px; width: auto; padding: 0 25px; margin: 0;" {% if not has_active_term %}disabled{% endif %}>
+                    <i class="fa fa-magnifying-glass"></i> Load Students
                 </button>
             </form>
         </div>
 
         {% if selected_classroom_id %}
-        <div class="card" style="padding: 0; overflow: hidden;">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--card-bg);">
-                <h3 style="margin: 0;">Marking List: {{ selected_date }}</h3>
-                <span class="status-badge status-active">{{ students|length }} Students</span>
+        <div class="card glass" style="padding: 0; overflow: hidden; border-radius: 20px;">
+            <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02);">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">Marking List: {{ selected_date }}</h3>
+                <span class="status-badge status-active" style="background: var(--primary-color); color: white;">{{ students|length }} Students</span>
             </div>
             
             <form method="post">
@@ -68,75 +69,79 @@
                 <input type="hidden" name="classroom_id" value="{{ selected_classroom_id }}">
                 <input type="hidden" name="attendance_date" value="{{ selected_date }}">
                 
-                <table class="premium-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>ID</th>
-                            <th style="text-align: center;">Attendance Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in students %}
-                        <tr>
-                            <td data-label="Student">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
-                                        {{ student.first_name|first }}
+                <div style="overflow-x: auto;">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>ID</th>
+                                <th style="text-align: center;">Attendance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td data-label="Student">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 12px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; box-shadow: 0 4px 10px var(--shadow-color);">
+                                            {{ student.first_name|first }}
+                                        </div>
+                                        <span style="font-weight: 600; color: var(--secondary-color);">{{ student.get_full_name }}</span>
                                     </div>
-                                    <span style="font-weight: 600;">{{ student.get_full_name }}</span>
-                                </div>
-                            </td>
-                            <td data-label="ID">{{ student.custom_id }}</td>
-                            <td style="text-align: center;" data-label="Status">
-                                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem;">
-                                        <input type="radio" name="status_{{ student.id }}" value="present" {% if student.current_status == 'present' %}checked{% endif %}>
-                                        Present
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #e74c3c;">
-                                        <input type="radio" name="status_{{ student.id }}" value="absent" {% if student.current_status == 'absent' %}checked{% endif %}>
-                                        Absent
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #f39c12;">
-                                        <input type="radio" name="status_{{ student.id }}" value="late" {% if student.current_status == 'late' %}checked{% endif %}>
-                                        Late
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; color: #7f8c8d;">
-                                        <input type="radio" name="status_{{ student.id }}" value="excused" {% if student.current_status == 'excused' %}checked{% endif %}>
-                                        Excused
-                                    </label>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                <i class="fa fa-users-slash" style="font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
-                                No students currently assigned to this classroom.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                <td data-label="ID" style="font-family: monospace; font-weight: 600; color: var(--text-muted);">{{ student.custom_id }}</td>
+                                <td style="text-align: center;" data-label="Status">
+                                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                                            <input type="radio" name="status_{{ student.id }}" value="present" {% if student.current_status == 'present' %}checked{% endif %} style="accent-color: #10b981;">
+                                            Present
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #ef4444;">
+                                            <input type="radio" name="status_{{ student.id }}" value="absent" {% if student.current_status == 'absent' %}checked{% endif %} style="accent-color: #ef4444;">
+                                            Absent
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #f59e0b;">
+                                            <input type="radio" name="status_{{ student.id }}" value="late" {% if student.current_status == 'late' %}checked{% endif %} style="accent-color: #f59e0b;">
+                                            Late
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #6366f1;">
+                                            <input type="radio" name="status_{{ student.id }}" value="excused" {% if student.current_status == 'excused' %}checked{% endif %} style="accent-color: #6366f1;">
+                                            Excused
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; padding: 60px; color: var(--text-muted);">
+                                    <div style="font-size: 3rem; opacity: 0.1; margin-bottom: 15px;"><i class="fa fa-users-slash"></i></div>
+                                    No students assigned to this classroom.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 
-                <div style="padding: 20px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <div style="padding: 25px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
                     {% if not has_active_term %}
-                        <p style="color: #e74c3c; font-size: 0.85rem; margin-right: 20px; display: flex; align-items: center; gap: 5px;">
-                            <i class="fa fa-exclamation-triangle"></i> Marking disabled: No active term.
-                        </p>
+                        <div class="status-badge status-inactive" style="background: #fee2e2; color: #cb2431; padding: 10px 15px; border-radius: 10px;">
+                            <i class="fa fa-warning"></i> Marking disabled: No active term found.
+                        </div>
                     {% endif %}
-                    <button type="submit" class="btn-submit" style="width: auto; padding: 12px 30px;" {% if not has_active_term %}disabled{% endif %}>
-                        <i class="fa fa-save"></i> Save Attendance Records
+                    <button type="submit" class="btn-submit" style="width: auto; padding: 0 35px; height: 50px; background: var(--gradient); border: none; box-shadow: 0 4px 15px var(--shadow-color);" {% if not has_active_term %}disabled{% endif %}>
+                        <i class="fa fa-cloud-arrow-up"></i> Save Records
                     </button>
                 </div>
             </form>
         </div>
         {% else %}
-        <div style="text-align: center; padding: 100px 20px; background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color);">
-            <i class="fa fa-calendar-check" style="font-size: 4rem; color: #eee; margin-bottom: 20px;"></i>
-            <h3 style="color: var(--text-muted);">Select a classroom and date to mark attendance</h3>
-            <p style="color: #999;">Daily attendance helps in monitoring student consistency and academic engagement.</p>
+        <div class="card glass" style="text-align: center; padding: 80px 40px; border-radius: 20px;">
+            <div style="width: 80px; height: 80px; background: var(--primary-light); color: var(--primary-color); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 25px; transform: rotate(-10deg);">
+                <i class="fa fa-calendar-check"></i>
+            </div>
+            <h2 style="font-weight: 800; margin-bottom: 10px;">Mark Daily Attendance</h2>
+            <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto 30px;">Select a classroom and specific date above to begin recording student presence and punctuality.</p>
         </div>
         {% endif %}
     </main>

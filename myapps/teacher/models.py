@@ -26,18 +26,39 @@ class Assignment(models.Model):
     def __str__(self):
         return f"{self.title} - {self.class_subject.subject.name} ({self.class_subject.classroom.name})"
 
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 class Grade(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='grades')
     student = models.ForeignKey('accounts.User', on_delete=models.CASCADE, limit_choices_to={'role': 'student'}, related_name='grades_received')
     score = models.DecimalField(max_digits=5, decimal_places=2)
     remarks = models.TextField(blank=True)
+    graded_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='grades_assigned')
     graded_at = models.DateTimeField(auto_now=True)
+    
+    # Soft Delete Fields
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ('assignment', 'student')
+        indexes = [
+            models.Index(fields=['is_deleted']),
+        ]
 
     def __str__(self):
         return f"{self.student.username}: {self.score}/{self.assignment.max_score} for {self.assignment.title}"
+
+    def delete(self, *args, **kwargs):
+        from django.utils import timezone
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
 
 class StudentSubmission(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')

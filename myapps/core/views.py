@@ -13,46 +13,86 @@ from myapps.super_admin.models import GlobalSetting
 def home(request):
   return redirect('login')
 
+from django.utils import timezone
+from datetime import timedelta
+from myapps.school_admin.utils import log_action
+
 def login_view(request):
-
-  if request.user.is_authenticated:
-    if request.user.is_superuser and connection.schema_name == 'public':
-      return redirect('super_admin_dashboard')
-    if request.user.is_school_admin():
-      return redirect('school_admin_dashboard')
-    if request.user.is_teacher():
-      return redirect('teacher_dashboard')
-    if request.user.is_student():
-      return redirect('student_dashboard')
-    if request.user.is_parent():
-      return redirect('parent_dashboard')
-  
-  if request.method == 'POST':
-      form = AuthenticationForm(request, data=request.POST)
-      if form.is_valid():
-        user = form.get_user()
-
-        if not user.is_active:
-          messages.error(request, 'Account is disabled.')
-          return redirect('login')
-        login(request, user)
-
-        if user.is_superuser and connection.schema_name == 'public':
+    if request.user.is_authenticated:
+        if request.user.is_superuser and connection.schema_name == 'public':
             return redirect('super_admin_dashboard')
-        if user.is_school_admin():
+        if request.user.is_school_admin():
             return redirect('school_admin_dashboard')
-        if user.is_teacher():
+        if request.user.is_teacher():
             return redirect('teacher_dashboard')
-        if user.is_student():
+        if request.user.is_student():
             return redirect('student_dashboard')
-        if user.is_parent():
+        if request.user.is_parent():
             return redirect('parent_dashboard')
-      else:
-        messages.error(request, 'Invalid username or password')
+    
+    if request.method == 'POST':
+        # 0. Honeypot check for bots
+        if request.POST.get('email_confirm'):
+            log_action(None, 'SECURITY', 'User', None, "Bot detected via Honeypot field on login page.", request=request)
+            return render(request, 'login_page.html')
+
+        username = request.POST.get('username')
+        user_candidate = User.objects.filter(username=username).first()
+
+        # 1. Check Lockout Status
+        if user_candidate and user_candidate.lockout_until:
+            if timezone.now() < user_candidate.lockout_until:
+                diff = user_candidate.lockout_until - timezone.now()
+                minutes = int(diff.total_seconds() // 60)
+                messages.error(request, f'Account locked due to multiple failed attempts. Try again in {minutes} minutes.')
+                log_action(None, 'SECURITY', 'User', user_candidate.custom_id, f"Blocked login attempt for locked account: {username}", request=request)
+                return render(request, 'login_page.html')
+            else:
+                # Lockout expired, reset it but don't reset attempts yet (must login successfully)
+                user_candidate.lockout_until = None
+                user_candidate.save()
+
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+
+            if not user.is_active:
+                messages.error(request, 'Account is disabled.')
+                return redirect('login')
+            
+            # Reset security fields on success
+            user.failed_login_attempts = 0
+            user.lockout_until = None
+            user.save()
+
+            login(request, user)
+            log_action(user, 'SECURITY', 'User', user.custom_id, f"Successful login for {user.username}", request=request)
+
+            if user.is_superuser and connection.schema_name == 'public':
+                return redirect('super_admin_dashboard')
+            if user.is_school_admin():
+                return redirect('school_admin_dashboard')
+            if user.is_teacher():
+                return redirect('teacher_dashboard')
+            if user.is_student():
+                return redirect('student_dashboard')
+            if user.is_parent():
+                return redirect('parent_dashboard')
+        else:
+            # Handle Failure
+            if user_candidate:
+                user_candidate.failed_login_attempts += 1
+                if user_candidate.failed_login_attempts >= 5:
+                    user_candidate.lockout_until = timezone.now() + timedelta(minutes=15)
+                    log_action(None, 'SECURITY', 'User', user_candidate.custom_id, f"Account locked for user: {username} after 5 failed attempts.", request=request)
+                else:
+                    log_action(None, 'SECURITY', 'User', user_candidate.custom_id, f"Failed login attempt ({user_candidate.failed_login_attempts}/5) for user: {username}", request=request)
+                user_candidate.save()
+            
+            messages.error(request, 'Invalid username or password')
 
 
-  
-  return render(request, 'login_page.html')
+    return render(request, 'login_page.html')
 
 def impersonate_receive(request, token):
     signer = TimestampSigner()

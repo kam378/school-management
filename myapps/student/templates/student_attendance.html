@@ -4,10 +4,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance - EduManage</title>
+    <title>Attendance - {{ school_settings.school_name|default:"EduManage" }}</title>
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     {% include "favicon.html" %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: {{ school_settings.primary_color|default:"#4a90e2" }};
+            --primary-light: {{ school_settings.primary_color|default:"#4a90e2" }}22;
+            --gradient: linear-gradient(135deg, var(--primary), {{ school_settings.secondary_color|default:"#2c3e50" }});
+        }
+
+        /* Override specific classes to fit theme.css layout */
+        .main-content {
+            max-width: 1400px; /* Allow more space for tables */
+        }
+
+        .header-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+
+        .header-title-wrapper h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--secondary-color);
+        }
+
+        .header-title-wrapper p.date {
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .stat-card:hover { transform: translateY(-5px); }
+
+        .stat-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.present { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+        .stat-icon.absent { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+        .stat-icon.rate { background: var(--primary-light); color: var(--primary); }
+
+        .stat-info .value {
+            margin: 5px 0;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-color);
+        }
+
+        /* Term Selector Customization */
+        .term-select {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 12px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: 0.2s;
+        }
+        .term-select:focus { border-color: var(--primary); }
+
+        /* Table Optimization */
+        .records-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow-color);
+        }
+
+        .records-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.01);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-present { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .badge-absent { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .badge-late { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .badge-excused { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+
+        @media (max-width: 768px) {
+            .header-bar { padding: 20px; flex-direction: column; align-items: stretch; gap: 20px; }
+            .header-title-wrapper { text-align: center; }
+            .term-selector-form { justify-content: center; }
+        }
+    </style>
 </head>
 <body>
 
@@ -15,116 +143,144 @@
 
     <main class="main-content">
         <div class="header-bar">
-            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <div style="display: flex; align-items: center;">
-                    <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+            <div class="header-title-wrapper">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')" style="background: none; border: none; font-size: 1.2rem; color: var(--text); cursor: pointer; display: none;">
                         <i class="fa fa-bars"></i>
                     </button>
-                    <div>
-                        <h1>My Attendance</h1>
-                        <p class="date">Track your attendance record {% if selected_term %}- {{ selected_term.name }} ({{ selected_term.academic_year.name }}){% endif %}</p>
-                    </div>
+                    <h1>My Attendance</h1>
                 </div>
-
-                <!-- Term Selector -->
-                {% if available_terms %}
-                <form method="get" id="termSelectorForm" style="display: flex; align-items: center; gap: 10px;">
-                    <label for="term_id" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">View Term:</label>
-                    <select name="term_id" id="term_id" class="form-control" onchange="this.form.submit()" style="padding: 8px 15px; border-radius: 8px; font-size: 0.85rem; min-width: 180px;">
-                        {% for term in available_terms %}
-                        <option value="{{ term.id }}" {% if selected_term and selected_term.id == term.id %}selected{% endif %}>
-                            {{ term.name }} ({{ term.academic_year.name }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </form>
-                {% endif %}
+                <p class="date">
+                    {% if selected_term %}
+                        {{ selected_term.name }} - {{ selected_term.academic_year.name }}
+                    {% else %}
+                        Monitor your school presence
+                    {% endif %}
+                </p>
             </div>
+
+            {% if available_terms %}
+            <form method="get" id="termSelectorForm" class="term-selector-form">
+                <label for="term_id">View History</label>
+                <select name="term_id" id="term_id" class="term-select" onchange="this.form.submit()">
+                    {% for term in available_terms %}
+                    <option value="{{ term.id }}" {% if selected_term and selected_term.id == term.id %}selected{% endif %}>
+                        {{ term.name }} ({{ term.academic_year.name }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
         </div>
 
         {% if not selected_term %}
-        <div style="text-align: center; padding: 100px 40px;">
-            <div style="width: 100px; height: 100px; background: rgba(15, 23, 42, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; color: var(--report-silver); font-size: 3rem;">
-                <i class="fa fa-folder-open"></i>
+        <div class="records-container">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fa fa-calendar-times"></i></div>
+                <h2>No Term Records Found</h2>
+                <p style="color: var(--text-muted); max-width: 400px; margin: 10px auto;">
+                    We couldn't find any active or published academic terms. Please check back later.
+                </p>
+                <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 25px; background: var(--gradient); color: white; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">Back to Dashboard</a>
             </div>
-            <h2>No Academic Term Found</h2>
-            <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">
-                There is no active or published academic term available at this time.
-            </p>
         </div>
         {% else %}
 
-        <!-- Attendance Stats -->
-        <div class="stats-grid" style="margin-bottom: 30px;">
-            <div class="card">
-                <i class="fa fa-check-circle" style="font-size: 2rem; color: #2ecc71;"></i>
-                <div style="overflow: visible;">
-                    <h3 style="color: var(--text-color);">Present</h3>
-                    <p class="value" style="color: var(--text-color);">{{ present_days }}</p>
-                    <small style="color: var(--text-muted);">days</small>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon present"><i class="fa fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Present</h3>
+                    <p class="value">{{ present_days }}</p>
+                    <small>Days recorded</small>
                 </div>
             </div>
-            <div class="card">
-                <i class="fa fa-times-circle" style="font-size: 2rem; color: #e74c3c;"></i>
-                <div style="overflow: visible;">
-                    <h3 style="color: var(--text-color);">Absent</h3>
-                    <p class="value" style="color: var(--text-color);">{{ absent_days }}</p>
-                    <small style="color: var(--text-muted);">days</small>
+            <div class="stat-card">
+                <div class="stat-icon absent"><i class="fa fa-times-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Absent</h3>
+                    <p class="value">{{ absent_days }}</p>
+                    <small>Including excused</small>
                 </div>
             </div>
-            <div class="card">
-                <i class="fa fa-percentage" style="font-size: 2rem; color: var(--primary-color);"></i>
-                <div style="overflow: visible;">
-                    <h3 style="color: var(--text-color);">Attendance Rate</h3>
-                    <p class="value" style="color: var(--text-color);">{{ attendance_rate }}%</p>
-                    <small style="color: var(--text-muted);">
+            {% if late_days > 0 %}
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>Late Arrivals</h3>
+                    <p class="value">{{ late_days }}</p>
+                    <small>Be on time!</small>
+                </div>
+            </div>
+            {% endif %}
+            <div class="stat-card">
+                <div class="stat-icon rate"><i class="fa fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h3>Attendance Rate</h3>
+                    <p class="value">{{ attendance_rate }}%</p>
+                    <small>
                         {% if attendance_rate >= 90 %}Excellent!{% elif attendance_rate >= 75 %}Good Record{% else %}Needs Improvement{% endif %}
                     </small>
                 </div>
             </div>
         </div>
 
-        <!-- Attendance Record Table -->
-        <h2 style="margin-bottom: 20px; color: var(--text-color);">Daily Record: {{ selected_term.name }}</h2>
-        <table class="premium-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Day</th>
-                    <th>Status</th>
-                    <th>Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in attendance_records %}
-                <tr>
-                    <td data-label="Date">{{ record.date|date:"F j, Y" }}</td>
-                    <td data-label="Day">{{ record.date|date:"l" }}</td>
-                    <td data-label="Status">
-                        {% if record.status == 'present' %}
-                            <span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-check"></i> Present</span>
-                        {% elif record.status == 'absent' %}
-                            <span style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-times"></i> Absent</span>
-                        {% elif record.status == 'late' %}
-                            <span style="background: rgba(243, 156, 18, 0.15); color: #f39c12; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-clock"></i> Late</span>
-                        {% elif record.status == 'excused' %}
-                            <span style="background: rgba(127, 140, 141, 0.15); color: #7f8c8d; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;"><i class="fa fa-info-circle"></i> Excused</span>
-                        {% endif %}
-                    </td>
-                    <td data-label="Remarks">{{ record.notes|default:"-" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        No attendance records found for this term.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Table -->
+        <div class="records-container">
+            <div class="records-header">
+                <h2>Daily Attendance Log</h2>
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">{{ attendance_records|length }} Total Records</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Day of Week</th>
+                            <th>Status</th>
+                            <th>Notes/Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.date|date:"M j, Y" }}</td>
+                            <td style="color: var(--text-muted);">{{ record.date|date:"l" }}</td>
+                            <td>
+                                {% if record.status == 'present' %}
+                                    <span class="status-badge badge-present"><i class="fa fa-check"></i> Present</span>
+                                {% elif record.status == 'absent' %}
+                                    <span class="status-badge badge-absent"><i class="fa fa-times"></i> Absent</span>
+                                {% elif record.status == 'late' %}
+                                    <span class="status-badge badge-late"><i class="fa fa-clock"></i> Late</span>
+                                {% elif record.status == 'excused' %}
+                                    <span class="status-badge badge-excused"><i class="fa fa-info-circle"></i> Excused</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">{{ record.notes|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state" style="padding: 40px;">
+                                    <p>No individual records logged for this term.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
         {% endif %}
-
     </main>
 
+    <script>
+        // Simple sidebar toggle for mobile
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

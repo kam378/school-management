@@ -18,41 +18,49 @@ def parent_dashboard(request):
     
     from myapps.teacher.models import Grade
     from myapps.attendances.models import StudentAttendance
-    from myapps.school_admin.models import Classroom
+    from myapps.school_admin.models import Classroom, Term
     from django.db.models import Avg, Sum
     
     profile, created = ParentProfile.objects.get_or_create(parent=request.user)
     children_objs = profile.children.all()
     
+    # Get latest published term for overall context
+    latest_published_term = Term.objects.filter(is_published=True).order_by('-academic_year__start_date', '-id').first()
+    
     children_data = []
     for student in children_objs:
-        # Calculate GPA (Average Percentage)
+        # For dashboard summary, we use the LATEST PUBLISHED term only
+        # This prevents parents from seeing incomplete "live" data unless published.
+        term_to_stats = latest_published_term
+        
         grades = Grade.objects.filter(student=student)
+        attendance = StudentAttendance.objects.filter(student=student)
+        
+        if term_to_stats:
+            grades = grades.filter(assignment__term=term_to_stats)
+            attendance = attendance.filter(term=term_to_stats)
+            
         avg_grade = 0
         if grades.exists():
             total_score = grades.aggregate(Sum('score'))['score__sum'] or 0
             total_max = grades.aggregate(Sum('assignment__max_score'))['assignment__max_score__sum'] or 1
             avg_grade = round((total_score / total_max) * 100, 1)
         
-        # Calculate Attendance %
-        attendance = StudentAttendance.objects.filter(student=student)
         total_days = attendance.count()
-        present_days = attendance.filter(status='present').count()
-        late_days = attendance.filter(status='late').count()
-        
         att_rate = 0
         if total_days > 0:
-            # Late counts as 0.5 present
-            att_rate = round(((present_days + (late_days * 0.5)) / total_days) * 100, 1)
+            present = attendance.filter(status='present').count()
+            late = attendance.filter(status='late').count()
+            att_rate = round(((present + (late * 0.5)) / total_days) * 100, 1)
         
-        # Get Classroom
         classroom = Classroom.objects.filter(students=student).first()
         
         children_data.append({
             'obj': student,
             'avg_grade': avg_grade,
             'att_rate': att_rate,
-            'classroom': classroom
+            'classroom': classroom,
+            'active_term_name': term_to_stats.name if term_to_stats else "No Published Term"
         })
     
     announcements = Announcement.objects.all().order_by('-date')[:5]
@@ -82,7 +90,7 @@ def parent_child_results(request, student_id):
     
     from myapps.teacher.models import Grade
     from myapps.attendances.models import StudentAttendance
-    from myapps.school_admin.models import Classroom, Subject, ClassSubject
+    from myapps.school_admin.models import Classroom, Subject, ClassSubject, Term
     from django.db.models import Avg, Sum
     
     student = get_object_or_404(User, id=student_id, role='student')
@@ -90,16 +98,29 @@ def parent_child_results(request, student_id):
     
     if student not in profile.children.all():
         return redirect('parent_dashboard')
+
+    # Term Selection: Only PUBLISHED terms
+    available_terms = Term.objects.filter(is_published=True).order_by('-academic_year__start_date', '-id')
+    selected_term_id = request.GET.get('term_id')
+    selected_term = None
     
-    # 1. Performance Overview
+    if selected_term_id:
+        selected_term = available_terms.filter(id=selected_term_id).first()
+    
+    if not selected_term:
+        selected_term = available_terms.first()
+
+    # 1. Performance Overview (Filtered by term)
     grades = Grade.objects.filter(student=student)
+    if selected_term:
+        grades = grades.filter(assignment__term=selected_term)
+    
     avg_grade_pct = 0
     if grades.exists():
         total_score = grades.aggregate(Sum('score'))['score__sum'] or 0
         total_max = grades.aggregate(Sum('assignment__max_score'))['assignment__max_score__sum'] or 1
         avg_grade_pct = (total_score / total_max) * 100
     
-    # Simple Grade Mapping
     def get_grade_letter(pct):
         if pct >= 90: return 'A+'
         if pct >= 80: return 'A'
@@ -110,8 +131,11 @@ def parent_child_results(request, student_id):
     
     display_grade = get_grade_letter(avg_grade_pct)
 
-    # 2. Attendance Summary
+    # 2. Attendance Summary (Filtered by term)
     attendance = StudentAttendance.objects.filter(student=student)
+    if selected_term:
+        attendance = attendance.filter(term=selected_term)
+        
     total_days = attendance.count()
     att_rate = 0
     if total_days > 0:
@@ -119,21 +143,18 @@ def parent_child_results(request, student_id):
         late = attendance.filter(status='late').count()
         att_rate = round(((present + (late * 0.5)) / total_days) * 100, 1)
 
-    # 3. Class Rank (Simplified: Based on total scores in the same classroom)
+    # 3. Class Rank
     classroom = Classroom.objects.filter(students=student).first()
     rank_str = "N/A"
-    if classroom:
+    if classroom and selected_term:
         all_students = classroom.students.all()
         student_performances = []
         for s in all_students:
-            s_grades = Grade.objects.filter(student=s)
+            s_grades = Grade.objects.filter(student=s, assignment__term=selected_term)
             s_total = s_grades.aggregate(Sum('score'))['score__sum'] or 0
             student_performances.append((s.id, s_total))
         
-        # Sort by total score descending
         student_performances.sort(key=lambda x: x[1], reverse=True)
-        
-        # Find current student index
         try:
             rank = [x[0] for x in student_performances].index(student.id) + 1
             rank_str = f"{rank} / {all_students.count()}"
@@ -141,12 +162,11 @@ def parent_child_results(request, student_id):
             pass
 
     # 4. Subject Wise Data
-    # Get all subjects the student is taking via their classroom
     subject_wise = []
-    if classroom:
+    if classroom and selected_term:
         class_subjects = ClassSubject.objects.filter(classroom=classroom)
         for cs in class_subjects:
-            subj_grades = Grade.objects.filter(student=student, assignment__class_subject=cs)
+            subj_grades = Grade.objects.filter(student=student, assignment__class_subject=cs, assignment__term=selected_term)
             if subj_grades.exists():
                 s_total = subj_grades.aggregate(Sum('score'))['score__sum'] or 0
                 s_max = subj_grades.aggregate(Sum('assignment__max_score'))['assignment__max_score__sum'] or 1
@@ -158,16 +178,17 @@ def parent_child_results(request, student_id):
                     'grade': get_grade_letter(subj_pct)
                 })
 
-    # 5. Latest Feedback
     latest_grade = grades.order_by('-graded_at').first()
 
     return render(request, 'parent_child_results.html', {
         'student': student,
-        'avg_grade': display_grade,
-        'att_rate': att_rate,
+        'avg_grade': display_grade if selected_term else "-",
+        'att_rate': att_rate if selected_term else 0,
         'rank': rank_str,
         'subject_wise': subject_wise,
         'latest_grade': latest_grade,
+        'available_terms': available_terms,
+        'selected_term': selected_term,
         'user_notification_count': get_notifications(request.user)
     })
 

@@ -63,6 +63,11 @@
                 <i class="fa fa-calendar-check"></i> Attendance
             </a>
         </li>
+        <li>
+            <a href="{% url 'learning_locker:manage_resources' %}" class="{% if 'locker' in request.path %}active{% endif %}">
+                <i class="fa fa-vault"></i> Learning Locker
+            </a>
+        </li>
         {% comment %} <li>
             <a href="{% url 'school_calendar' %}" class="{% if 'calendar' in request.path %}active{% endif %}">
                 <i class="fa fa-calendar-days"></i> School Calendar
@@ -72,7 +77,7 @@
 
         {% if school_settings.enable_whiteboard %}
         <li>
-            <a href="/whiteboard/" class="{% if '/whiteboard/' in request.path %}active{% endif %}">
+            <a href="{% url 'whiteboard_dashboard' %}" class="{% if 'whiteboard' in request.path %}active{% endif %}">
                 <i class="fa fa-chalkboard"></i> Whiteboard
             </a>
         </li>
@@ -80,11 +85,17 @@
 
         {% if school_settings.enable_chat %}
         <li>
-            <a href="/chat/" class="{% if '/chat/' in request.path %}active{% endif %}">
+            <a href="{% url 'chat_dashboard' %}" class="{% if 'chat' in request.path %}active{% endif %}">
                 <i class="fa fa-comments"></i> Chat System
             </a>
         </li>
         {% endif %}
+
+        <li>
+            <a href="{% url 'school_admin_logs' %}" class="{% if request.resolver_match.url_name == 'school_admin_logs' %}active{% endif %}">
+                <i class="fa fa-shield-halved"></i> System Logs
+            </a>
+        </li>
 
         <li>
             <a href="{% url 'school_admin_settings' %}" class="{% if request.resolver_match.url_name == 'school_admin_settings' %}active{% endif %}">
@@ -101,7 +112,7 @@
             <div style="font-weight: 600;">{{ request.user.get_full_name|default:request.user.username }}</div>
             <div style="font-size: 0.8rem; color: #888;">{{ request.user.role|title }}</div>
         </div>
-        <a href="/logout/" style="margin-left: auto; color: #d9534f;" title="Logout">
+        <a href="{% url 'logout' %}" style="margin-left: auto; color: #d9534f;" title="Logout">
             <i class="fa fa-sign-out-alt"></i>
         </a>
     </div>

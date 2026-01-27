@@ -19,6 +19,7 @@ class GlobalSetting(models.Model):
     platform_name = models.CharField(max_length=100, default="EduManage")
     logo = models.ImageField(upload_to='system_logos/', null=True, blank=True)
     primary_color = models.CharField(max_length=7, default="#4a90e2")
+    is_dark_mode = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
 
@@ -34,3 +35,24 @@ class GlobalSetting(models.Model):
         with schema_context('public'):
             obj, created = cls.objects.get_or_create(pk=1)
             return obj.maintenance_mode
+
+class PlatformResource(models.Model):
+    RESOURCE_TYPES = [
+        ('book', 'E-Book / PDF'),
+        ('video', 'Video Lesson'),
+        ('document', 'Study Material / Doc'),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPES, default='book')
+    file = models.FileField(upload_to='platform_resources/files/', blank=True, null=True)
+    external_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Platform Global Resource"
+        verbose_name_plural = "Platform Global Resources"
+
+    def __str__(self):
+        return f"[GLOBAL] {self.title}"

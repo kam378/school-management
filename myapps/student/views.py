@@ -149,6 +149,7 @@ def student_attendance(request):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
   from myapps.school_admin.models import Term, SchoolSettings
+  from myapps.attendances.models import StudentAttendance 
   from django.db.models import Q
   
   # Available terms: Published OR Active
@@ -256,6 +257,7 @@ def student_grades(request):
           subject_graded_count += 1
       
       grades_by_subject[class_subject.subject.name] = {
+          'id': class_subject.id,
           'teacher': class_subject.teacher.get_full_name() if class_subject.teacher else "N/A",
           'letter_grade': letter_grade,
           'percentage': round(subject_percentage, 1) if subject_grades.exists() else 0,
@@ -496,8 +498,66 @@ def student_profile(request):
     return render(request, "student_profile.html", context)
 
 
-def student_grade_detail(request):
+def student_grade_detail(request, class_subject_id):
   if not request.user.is_authenticated or not request.user.is_active or not request.user.role == "student":
     return redirect("login")
-  return render(request, "student_grade_detail.html")
+    
+  class_subject = get_object_or_404(ClassSubject, id=class_subject_id)
+  from myapps.school_admin.models import Term, SchoolSettings, GradeScale
+  from django.db.models import Q
+  
+  settings = SchoolSettings.objects.first()
+  current_term = Term.objects.filter(is_active=True).first()
+  
+  # Fetch all grades for this subject and student
+  grades = Grade.objects.filter(
+      student=request.user, 
+      assignment__class_subject=class_subject
+  ).select_related('assignment').order_by('-graded_at')
+  
+  # Term filtering if available
+  term_id = request.GET.get('term_id')
+  if term_id:
+      grades = grades.filter(assignment__term_id=term_id)
+  elif current_term:
+      grades = grades.filter(assignment__term=current_term)
+
+  # Breakdown
+  cass_grades = [g for g in grades if g.assignment.category == 'cass']
+  exam_grades = [g for g in grades if g.assignment.category == 'exam']
+  
+  # Stats
+  cass_w = settings.cass_weight if settings else 40
+  exam_w = settings.exam_weight if settings else 60
+  
+  cass_score = sum(g.score for g in cass_grades)
+  cass_max = sum(g.assignment.max_score for g in cass_grades)
+  cass_pct = (cass_score / cass_max * 100) if cass_max > 0 else 0
+  
+  exam_score = sum(g.score for g in exam_grades)
+  exam_max = sum(g.assignment.max_score for g in exam_grades)
+  exam_pct = (exam_score / exam_max * 100) if exam_max > 0 else 0
+  
+  final_pct = (cass_pct * cass_w / 100) + (exam_pct * exam_w / 100)
+  
+  # Match Grade
+  letter_grade = 'F'
+  badge_color = '#dc3545'
+  for scale in GradeScale.objects.all().order_by('-min_percentage'):
+      if final_pct >= float(scale.min_percentage):
+          letter_grade = scale.label
+          badge_color = scale.color_code
+          break
+
+  return render(request, "student_grade_detail.html", {
+      'class_subject': class_subject,
+      'grades': grades,
+      'cass_pct': round(cass_pct, 1),
+      'exam_pct': round(exam_pct, 1),
+      'final_pct': round(final_pct, 1),
+      'letter_grade': letter_grade,
+      'badge_color': badge_color,
+      'available_terms': Term.objects.filter(Q(is_active=True) | Q(is_published=True)),
+      'school_settings': settings
+  })
 

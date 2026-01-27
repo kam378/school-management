@@ -10,7 +10,7 @@
     
     <style>
         :root {
-            --chat-sidebar-width: 340px;
+            --chat-sidebar-width: 320px;
             --chat-primary: {{ school_settings.primary_color|default:"#4a90e2" }};
             --chat-primary-light: {{ school_settings.primary_color|default:"#4a90e2" }}22;
             
@@ -122,6 +122,8 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--chat-muted);
+            font-size: 0.8rem; /* Refined search icon size */
+            opacity: 0.7;
         }
 
         .search-input {
@@ -171,16 +173,16 @@
         }
 
         .avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
             background: var(--primary-gradient);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             box-shadow: 0 4px 10px var(--chat-primary-light);
         }
 
@@ -214,8 +216,8 @@
         }
 
         .chat-header {
-            height: 80px;
-            padding: 0 30px;
+            height: 75px;
+            padding: 0 25px;
             border-bottom: 1px solid var(--chat-border);
             display: flex;
             align-items: center;
@@ -228,17 +230,17 @@
         .chat-header-user { display: flex; align-items: center; gap: 15px; }
 
         .back-btn {
-            display: none; /* Corrected: Hidden by default */
+            display: none;
             background: var(--chat-card);
             border: 1px solid var(--chat-border);
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 10px;
             align-items: center;
             justify-content: center;
             color: var(--chat-text);
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: 12px;
             transition: all 0.2s;
         }
         .back-btn:hover { background: #fff; transform: translateX(-2px); }
@@ -330,9 +332,9 @@
         .send-btn {
             background: var(--primary-gradient);
             border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             color: white;
             display: flex;
             align-items: center;
@@ -368,8 +370,9 @@
             transform: rotate(-10deg);
         }
 
-        .empty-view i { font-size: 3.5rem; color: var(--chat-primary); }
-        .empty-view h2 { color: var(--chat-text); font-weight: 800; margin-bottom: 10px; }
+        .empty-view i { font-size: 2.5rem; color: var(--chat-primary); }
+        .empty-view h2 { color: var(--chat-text); font-weight: 800; margin-bottom: 8px; }
+        .empty-view p { font-size: 0.9rem; }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -395,16 +398,22 @@
         /* Smaller Screens - Font Size Optimization */
         @media (max-width: 480px) {
             html { font-size: 14px; }
-            .sidebar-header h1 { font-size: 1.25rem; }
+            .sidebar-header h1 { font-size: 1.2rem; }
             .contact-name { font-size: 0.95rem; }
             .contact-role { font-size: 0.7rem; }
             .message { font-size: 0.9rem; padding: 12px 14px; }
-            .chat-header { height: 70px; padding: 0 12px; }
-            .chat-header-user .contact-name { font-size: 1rem !important; }
-            .avatar { width: 44px; height: 44px; border-radius: 12px; }
+            .message-time { font-size: 0.65rem; }
+            .chat-header { height: 65px; padding: 0 12px; }
+            .chat-header-user .contact-name { font-size: 1.05rem !important; }
+            .avatar { width: 36px; height: 36px; border-radius: 10px; font-size: 0.9rem; }
             .sidebar-header { padding: 18px; }
+            .message-container { padding: 20px; gap: 10px; }
             .chat-input-area { padding: 15px; gap: 10px; }
-            .send-btn { width: 42px; height: 42px; border-radius: 12px; }
+            .send-btn { width: 40px; height: 40px; border-radius: 10px; font-size: 1.1rem; }
+            .back-btn, .header-actions div, .sidebar-title-row a { width: 34px !important; height: 34px !important; font-size: 0.9rem; border-radius: 8px !important; }
+            .search-input-wrapper { padding: 10px 15px 10px 35px; }
+            .search-input-wrapper i { left: 12px; font-size: 0.8rem; }
+            .input-wrapper { padding: 10px 15px; border-radius: 12px; }
         }
     </style>
 </head>
@@ -416,7 +425,7 @@
         <div class="sidebar-header">
             <div class="sidebar-title-row">
                 <h1>Messages</h1>
-                <a href="/" style="width: 40px; height: 40px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--chat-muted); border: 1px solid var(--chat-border);"><i class="fa fa-times"></i></a>
+                <a href="/" style="width: 36px; height: 36px; border-radius: 10px; background: var(--chat-card); display: flex; align-items: center; justify-content: center; color: var(--chat-muted); border: 1px solid var(--chat-border); font-size: 0.85rem;"><i class="fa fa-times" style="opacity: 0.6;"></i></a>
             </div>
             
             <div class="search-box">
@@ -458,7 +467,7 @@
                 <div class="chat-header-user">
                     <button class="back-btn" onclick="toggleSidebar(true)"><i class="fa fa-chevron-left"></i></button>
                     <div class="avatar-wrapper">
-                        <div class="avatar" style="width:44px; height:44px; font-size:1.1rem; border-radius: 12px;">
+                        <div class="avatar" style="width:40px; height:40px; font-size:1rem; border-radius: 12px;">
                             {{ other_user.first_name|first|upper }}
                         </div>
                         <span class="status-dot online"></span>
@@ -471,8 +480,8 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                     <div style="width: 40px; height: 40px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--chat-primary); border: 1px solid var(--chat-border); cursor: pointer;">
-                        <i class="fa fa-info-circle fa-lg"></i>
+                     <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--chat-card); display: flex; align-items: center; justify-content: center; color: var(--chat-primary); border: 1px solid var(--chat-border); cursor: pointer; font-size: 0.9rem;">
+                        <i class="fa fa-info-circle"></i>
                      </div>
                 </div>
             </header>

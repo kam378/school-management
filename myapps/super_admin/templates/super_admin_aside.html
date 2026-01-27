@@ -3,7 +3,47 @@
     <style>
         :root {
             --primary-color: {{ global_settings.primary_color|default:"#4a90e2" }} !important;
+            {% if global_settings.is_dark_mode %}
+            --bg-color: #121212 !important;
+            --card-bg: #1e1e1e !important;
+            --text-color: #f5f5f5 !important;
+            --text-muted: #b0b0b0 !important;
+            --border-color: #333333 !important;
+            --shadow-color: rgba(0,0,0,0.5) !important;
+            {% endif %}
         }
+
+        {% if global_settings.is_dark_mode %}
+        body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+        }
+        .main-content {
+            background-color: var(--bg-color) !important;
+        }
+        .card, .stat-card, .recent-section, .resource-form-container {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+        h1, h2, h3, h4, .label, label {
+            color: var(--text-color) !important;
+        }
+        .premium-table {
+            color: var(--text-color) !important;
+        }
+        .premium-table thead th {
+            background: rgba(255,255,255,0.05) !important;
+            color: var(--text-color) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        .premium-table tbody tr {
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        .premium-table tbody tr:hover {
+            background: rgba(255,255,255,0.02) !important;
+        }
+        {% endif %}
     </style>
     <div class="sidebar-header" style="justify-content: flex-start; gap: 15px;">
         {% if global_settings.logo %}
@@ -33,6 +73,17 @@
         <li>
             <a href="{% url 'system_settings' %}" class="{% if 'settings' in request.path %}active{% endif %}">
                 <i class="fa fa-cog"></i> System Settings
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'manage_platform_resources' %}" class="{% if 'resources' in request.path %}active{% endif %}">
+                <i class="fa fa-book-atlas"></i> Master Library
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'toggle_theme' %}">
+                <i class="fa {% if global_settings.is_dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i> 
+                Toggle {% if global_settings.is_dark_mode %}Light{% else %}Dark{% endif %} Mode
             </a>
         </li>
 

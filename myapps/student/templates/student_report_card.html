@@ -18,17 +18,16 @@
             --glass-border: rgba(255, 255, 255, 0.2);
         }
 
-        body {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            font-family: 'Inter', sans-serif;
-            color: #1e293b;
+        /* Fixed: Use theme background but refine for report viewing */
+        .main-content {
+            background: linear-gradient(135deg, var(--bg-color) 0%, #e2e8f0 100%);
             min-height: 100vh;
         }
 
         @media print {
-            .no-print, .sidebar, aside, .header-bar, .sidebar-overlay { display: none !important; }
-            body { background: white !important; margin: 0 !important; padding: 0 !important; display: block !important; }
-            .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+            .no-print, .sidebar, aside, .header-bar, .sidebar-overlay, .mobile-menu-btn { display: none !important; }
+            body { margin: 0 !important; padding: 0 !important; display: block !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; background: white !important; }
             .report-card { 
                 box-shadow: none !important; 
                 margin: 0 !important; 
@@ -338,11 +337,18 @@
 
     {% include "student_aside.html" %}
 
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
     <main class="main-content">
-        <div class="header-bar no-print" style="max-width: 1100px; margin: 0 auto 30px; background: transparent; padding: 0; display: flex; justify-content: space-between; align-items: center;">
-            <a href="{% url 'student_grades' %}" style="color: var(--report-blue); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <i class="fa fa-chevron-left"></i> Return to Portal
-            </a>
+        <div class="header-bar no-print" style="max-width: 1100px; margin: 0 auto 30px; background: transparent; padding: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a href="{% url 'student_grades' %}" style="color: var(--report-blue); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa fa-chevron-left"></i> Return to Portal
+                </a>
+            </div>
             
             <div style="display: flex; gap: 15px; align-items: center;">
                 {% if available_terms %}

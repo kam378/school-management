@@ -187,7 +187,7 @@ def enter_grade(request):
             grade, created = Grade.objects.update_or_create(
                 student_id=student_id,
                 assignment=assignment,
-                defaults={'score': score_value}
+                defaults={'score': score_value, 'graded_by': request.user}
             )
             
             return JsonResponse({

@@ -59,4 +59,5 @@ urlpatterns = [
     path('attendance/mark/', views.admin_mark_attendance, name='admin_mark_attendance'),
     path('edit-parent-profile/<str:custom_id>/', views.admin_edit_parent_profile, name='admin_edit_parent_profile'),
     path('profile/', views.admin_profile, name='school_admin_profile'),
+    path('logs/', views.admin_audit_logs, name='school_admin_logs'),
 ]

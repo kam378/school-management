@@ -202,3 +202,32 @@ class CalendarEvent(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_event_type_display()})"
+
+
+class AuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('CREATE', 'Created'),
+        ('UPDATE', 'Updated'),
+        ('DELETE', 'Deleted'),
+        ('PROMOTION', 'Student Promotion'),
+        ('SETTINGS', 'Settings Changed'),
+        ('SECURITY', 'Security Event'),
+    ]
+
+    user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='audit_logs')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    target_model = models.CharField(max_length=100)
+    target_id = models.CharField(max_length=100, blank=True, null=True)
+    details = models.TextField(blank=True, help_text="JSON or text representation of changes")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['action']),
+        ]
+
+    def __str__(self):
+        return f"{self.action} on {self.target_model} by {self.user} at {self.timestamp}"

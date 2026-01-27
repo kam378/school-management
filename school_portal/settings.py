@@ -86,6 +86,7 @@ TENANT_APPS = (
     'myapps.chat_system',
     'myapps.whiteboard',
     'myapps.attendances',
+    'myapps.learning_locker',
     'rest_framework',
 )
 
@@ -102,6 +103,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'myapps.super_admin.middleware.MaintenanceModeMiddleware',
+    'myapps.core.middleware.IPThrottlingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

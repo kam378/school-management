@@ -5,7 +5,7 @@ from .models import SubscriptionPlan, GlobalSetting
 class GlobalSettingsForm(forms.ModelForm):
     class Meta:
         model = GlobalSetting
-        fields = ['platform_name', 'logo', 'primary_color']
+        fields = ['platform_name', 'logo', 'primary_color', 'is_dark_mode']
         widgets = {
             'platform_name': forms.TextInput(attrs={'class': 'form-control'}),
             'primary_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
@@ -55,6 +55,20 @@ class SubscriptionPlanForm(forms.ModelForm):
             'max_students': forms.NumberInput(attrs={'class': 'form-control'}),
             'max_teachers': forms.NumberInput(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+from .models import PlatformResource
+
+class PlatformResourceForm(forms.ModelForm):
+    class Meta:
+        model = PlatformResource
+        fields = ['title', 'description', 'resource_type', 'file', 'external_url']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Global Book Title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'resource_type': forms.Select(attrs={'class': 'form-control'}),
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'external_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
         }
 
 

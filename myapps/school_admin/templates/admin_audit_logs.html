@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - EduManage</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% include "favicon.html" %}
+    <style>
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+        .filter-input:focus { border-color: var(--primary-color); }
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        .pagination .active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .log-details {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .action-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .action-create { background: #e3f9e5; color: #1f7a33; }
+        .action-update { background: #e0f2ff; color: #0056b3; }
+        .action-delete { background: #fff0f0; color: #dc3545; }
+        .action-security { background: #fff8e1; color: #f39c12; }
+        .action-settings { background: #f3e5f5; color: #7b1fa2; }
+    </style>
+</head>
+<body>
+
+    {% include "admin_aside.html" %}
+    <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active');"></div>
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active');">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1>System Audit Logs</h1>
+                    <p class="date">Track every critical action performed in the system.</p>
+                </div>
+            </div>
+            {% include "admin_extra_btns.html" %}
+        </div>
+
+        <form method="GET" class="filter-bar">
+            <div class="filter-group">
+                <i class="fa fa-search" style="color:#888;"></i>
+                <input type="text" name="search" class="filter-input" placeholder="Search logs..." value="{{ search_query|default:'' }}">
+            </div>
+            <div class="filter-group">
+                <select name="action" class="filter-input" onchange="this.form.submit()">
+                    <option value="">All Actions</option>
+                    {% for key, val in action_choices %}
+                    <option value="{{ key }}" {% if current_action == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-add" style="background: #27ae60;">
+                <i class="fa fa-filter"></i> Filter
+            </button>
+            <a href="{% url 'school_admin_logs' %}" class="btn-add" style="background: #95a5a6;">
+                <i class="fa fa-rotate-right"></i> Reset
+            </a>
+        </form>
+
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td data-label="Timestamp" style="font-size: 0.8rem; white-space: nowrap;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                    <td data-label="User" style="font-weight: 500;">{{ log.user.username|default:"System" }}</td>
+                    <td data-label="Action">
+                        <span class="action-badge 
+                            {% if log.action == 'CREATE' %}action-create
+                            {% elif log.action == 'UPDATE' %}action-update
+                            {% elif log.action == 'DELETE' %}action-delete
+                            {% elif log.action == 'SECURITY' %}action-security
+                            {% elif log.action == 'SETTINGS' %}action-settings
+                            {% endif %}">
+                            {{ log.get_action_display }}
+                        </span>
+                    </td>
+                    <td data-label="Target" style="font-size: 0.85rem;">{{ log.target_model }} <span style="color: var(--text-muted);">#{{ log.target_id|default:"-" }}</span></td>
+                    <td data-label="Details"><div class="log-details" title="{{ log.details }}">{{ log.details }}</div></td>
+                    <td data-label="IP Address" style="font-family: monospace; font-size: 0.8rem;">{{ log.ip_address|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #888;">
+                        No audit logs found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if current_action %}&action={{ current_action }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if current_action %}&action={{ current_action }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Prev</a>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <span class="active">{{ i }}</span>
+                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                    <a href="?page={{ i }}{% if current_action %}&action={{ current_action }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if current_action %}&action={{ current_action }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if current_action %}&action={{ current_action }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </main>
+</body>
+</html>

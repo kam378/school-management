@@ -17,7 +17,7 @@ from .forms import (
     CalendarEventForm, CustomUserCreationForm, CustomUserChangeForm,
     AdminProfileForm, AcademicYearForm, TermForm
 )
-from .utils import get_notifications
+from .utils import get_notifications, log_action
 from myapps.super_admin.utils import QuotaManager
 from django.utils import timezone
 from django.db import connection, transaction
@@ -60,7 +60,10 @@ def admin_delete_user(request, id):
         return redirect("school_admin_manage_users")
         
     username = user_to_delete.username
+    user_id = user_to_delete.custom_id
     user_to_delete.delete()
+    
+    log_action(request.user, 'DELETE', 'User', user_id, f"Deleted user: {username}", request=request)
     
     messages.success(request, f"User {username} has been deleted.")
     Notification.objects.create(
@@ -184,6 +187,7 @@ def admin_edit_user(request, id):
                      })
 
             user = form.save()
+            log_action(request.user, 'UPDATE', 'User', user.custom_id, f"Updated user profile for {user.username}", request=request)
             messages.success(request, f"User {user.username} updated successfully.")
             return redirect("school_admin_manage_users")
     else:
@@ -220,6 +224,7 @@ def admin_add_user(request):
             return redirect("school_admin_add_user")
 
         user = form.save()
+        log_action(request.user, 'CREATE', 'User', user.custom_id, f"Created new user: {user.username} (Role: {user.role})", request=request)
         messages.success(request, f"Successfully created user {user.username} with ID {user.custom_id}")
         
         Notification.objects.create(
@@ -430,6 +435,7 @@ def admin_settings(request):
       form = SchoolSettingsForm(request.POST, instance=settings_obj)
       if form.is_valid():
           form.save()
+          log_action(request.user, 'SETTINGS', 'SchoolSettings', settings_obj.id, "Updated global school settings", request=request)
           messages.success(request, "Settings updated successfully!")
           Notification.objects.create(
               user=request.user,
@@ -887,6 +893,7 @@ def admin_promote_execute(request):
                     profile.save()
             
             messages.success(request, f"Successfully graduated {len(selected_student_ids)} students.")
+            log_action(request.user, 'PROMOTION', 'StudentProfile', None, f"Graduated/Archived {len(selected_student_ids)} students for year {academic_year}", request=request)
             return redirect('admin_student_promotion')
 
         # Regular Promotion
@@ -931,6 +938,7 @@ def admin_promote_execute(request):
                 promoted_count += 1
             
         messages.success(request, f"Successfully promoted {promoted_count} students to {target_grade.name} ({target_classroom.name}).")
+        log_action(request.user, 'PROMOTION', 'StudentProfile', None, f"Promoted {promoted_count} students to {target_grade.name} for year {academic_year}", request=request)
         
     except Exception as e:
         messages.error(request, f"Error during promotion: {str(e)}")
@@ -1157,10 +1165,12 @@ def admin_toggle_year_active(request, id):
     if not year.is_active:
         year.is_active = True
         year.save()
+        log_action(request.user, 'UPDATE', 'AcademicYear', year.id, f"Activated academic year: {year.name}", request=request)
         messages.success(request, f"{year.name} is now the Active Academic Year.")
     else:
         year.is_active = False
         year.save()
+        log_action(request.user, 'UPDATE', 'AcademicYear', year.id, f"Deactivated academic year: {year.name}", request=request)
         messages.info(request, f"{year.name} deactivated.")
         
     return redirect("school_admin_settings")
@@ -1174,10 +1184,12 @@ def admin_toggle_term_active(request, id):
     if not term.is_active:
         term.is_active = True
         term.save()
+        log_action(request.user, 'UPDATE', 'Term', term.id, f"Activated term: {term.name} ({term.academic_year.name})", request=request)
         messages.success(request, f"{term.name} is now the Active Term.")
     else:
         term.is_active = False
         term.save()
+        log_action(request.user, 'UPDATE', 'Term', term.id, f"Deactivated term: {term.name} ({term.academic_year.name})", request=request)
         messages.info(request, f"{term.name} deactivated.")
         
     return redirect("school_admin_settings")
@@ -1192,6 +1204,7 @@ def admin_toggle_term_publish(request, id):
     term.save()
     
     status = "Published" if term.is_published else "Unpublished"
+    log_action(request.user, 'UPDATE', 'Term', term.id, f"Set term {term.name} to {status}", request=request)
     messages.success(request, f"Results for {term.name} are now {status}.")
     
     return redirect("school_admin_settings")
@@ -1201,7 +1214,9 @@ def admin_delete_year(request, id):
     if request.user.role != "school_admin":
         return redirect("login")
     year = get_object_or_404(AcademicYear, id=id)
+    year_name = year.name
     year.delete()
+    log_action(request.user, 'DELETE', 'AcademicYear', id, f"Deleted academic year: {year_name}", request=request)
     messages.success(request, "Academic Year deleted.")
     return redirect("school_admin_settings")
 
@@ -1210,6 +1225,46 @@ def admin_delete_term(request, id):
     if request.user.role != "school_admin":
         return redirect("login")
     term = get_object_or_404(Term, id=id)
+    term_name = term.name
     term.delete()
+    log_action(request.user, 'DELETE', 'Term', id, f"Deleted term: {term_name}", request=request)
     messages.success(request, "Term deleted.")
     return redirect("school_admin_settings")
+
+@login_required
+def admin_audit_logs(request):
+    if not request.user.role == "school_admin":
+        return redirect("login")
+    
+    from django.core.paginator import Paginator
+    from .models import AuditLog
+    
+    logs_list = AuditLog.objects.all().order_by('-timestamp')
+    
+    # Filtering
+    action_filter = request.GET.get('action')
+    if action_filter:
+        logs_list = logs_list.filter(action=action_filter)
+        
+    search_query = request.GET.get('search')
+    if search_query:
+        logs_list = logs_list.filter(
+            Q(user__username__icontains=search_query) |
+            Q(details__icontains=search_query) |
+            Q(target_model__icontains=search_query) |
+            Q(target_id__icontains=search_query)
+        )
+        
+    paginator = Paginator(logs_list, 50) # Show 50 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'action_choices': AuditLog.ACTION_CHOICES,
+        'current_action': action_filter,
+        'search_query': search_query,
+        'user_notification_count': get_notifications(request.user)
+    }
+    
+    return render(request, 'admin_audit_logs.html', context)

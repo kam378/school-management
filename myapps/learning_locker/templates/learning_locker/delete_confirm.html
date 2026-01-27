@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Deletion | {{ school_settings.school_name|default:"EduManage" }}</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    {% if user.is_school_admin %}
+        {% include "admin_aside.html" %}
+    {% else %}
+        {% include "teacher_aside.html" %}
+    {% endif %}
+
+    <main class="main-content">
+        <div style="max-width: 600px; margin: 100px auto; text-align: center; background: var(--card-bg); padding: 50px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 15px 35px var(--shadow-color);">
+            <div style="width: 80px; height: 80px; background: rgba(231, 76, 60, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: #e74c3c; font-size: 2.5rem;">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            
+            <h2 style="margin-bottom: 15px; color: var(--text-color);">Remove Resource?</h2>
+            <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 35px;">
+                Are you sure you want to delete <strong>"{{ resource.title }}"</strong>? This action will permanently remove it from the Learning Locker and students will no longer be able to access it.
+            </p>
+
+            <form method="POST" style="display: flex; gap: 15px; justify-content: center;">
+                {% csrf_token %}
+                <a href="{% url 'learning_locker:manage_resources' %}" class="btn-secondary" style="background: rgba(0,0,0,0.05); color: var(--text-color); padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">Cancel</a>
+                <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; cursor: pointer;">Yes, Delete It</button>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>

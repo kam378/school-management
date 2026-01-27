@@ -14,6 +14,9 @@ urlpatterns = [
     path('plans/edit/<int:pk>/', views.plan_edit, name='super_admin_plan_edit'),
     path('plans/delete/<int:pk>/', views.plan_delete, name='super_admin_plan_delete'),
     path('settings/', views.system_settings, name='system_settings'),
+    path('theme/toggle/', views.toggle_theme, name='toggle_theme'),
+    path('resources/', views.manage_platform_resources, name='manage_platform_resources'),
+    path('resources/delete/<int:pk>/', views.delete_platform_resource, name='delete_platform_resource'),
 ]
 
 

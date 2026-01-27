@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Library (Locker Hub) - System Admin</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .resource-form-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "super_admin_aside.html" %}
+
+    <main class="main-content">
+        <div class="header-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div>
+                    <h1 style="margin:0;">Global Library (Locker Hub)</h1>
+                    <p style="margin:5px 0 0; opacity: 0.8;">Manage books and resources shared with all schools</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <form method="GET" style="display: flex; gap: 5px; margin-right: 10px;">
+                    <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search global hub..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); width: 200px;">
+                    <button type="submit" class="btn-add" style="margin:0; padding: 8px 12px; width: auto;"><i class="fa fa-search"></i></button>
+                    {% if request.GET.q %}
+                        <a href="?" class="btn-add" style="background: rgba(var(--primary-rgb), 0.1); color: var(--text-color); width: auto; padding: 8px 12px;"><i class="fa fa-times"></i></a>
+                    {% endif %}
+                </form>
+                <button class="btn-add" onclick="document.getElementById('resource-form').scrollIntoView({behavior: 'smooth'})">
+                    <i class="fa fa-plus"></i> Add Global Hub Resource
+                </button>
+            </div>
+        </div>
+
+        <div id="resource-form" class="resource-form-container" style="margin-top: 30px;">
+            <h2 style="margin-top: 0; margin-bottom: 25px;"><i class="fa fa-cloud-upload" style="margin-right: 10px; color: var(--primary-color);"></i> Add Master Library Material</h2>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                        <label class="label">Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<small style="color:red;">{{ form.title.errors }}</small>{% endif %}
+                    </div>
+                    <div>
+                        <label class="label">Type</label>
+                        {{ form.resource_type }}
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label class="label">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div>
+                        <label class="label">File Upload (PDF/Books)</label>
+                        {{ form.file }}
+                    </div>
+                    <div>
+                        <label class="label">Or External URL</label>
+                        {{ form.external_url }}
+                    </div>
+                </div>
+                <div style="margin-top: 25px;">
+                    <button type="submit" class="btn-add" style="padding: 12px 30px; font-weight: 700; width: auto;">
+                        <i class="fa fa-save"></i> Save to Platform Hub
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <h3 style="margin: 40px 0 20px;">Existing Global Materials</h3>
+        <div class="card" style="padding: 0; overflow: hidden; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Resource Title</th>
+                        <th>Type</th>
+                        <th>Date Added</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in resources %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ res.title }}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.7;">{{ res.description|truncatewords:10 }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge" style="background: rgba(74, 144, 226, 0.1); color: var(--primary-color);">
+                                {{ res.get_resource_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ res.created_at|date:"M d, Y" }}</td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                {% if res.file %}
+                                    <a href="{{ res.file.url }}" target="_blank" class="edit" style="color: var(--primary-color);" title="View"><i class="fa fa-eye"></i></a>
+                                {% elif res.external_url %}
+                                    <a href="{{ res.external_url }}" target="_blank" class="edit" style="color: var(--primary-color);" title="Link"><i class="fa fa-link"></i></a>
+                                {% endif %}
+                                <a href="{% url 'delete_platform_resource' res.pk %}" class="delete" style="color: #d9534f;" onclick="return confirm('Remove from Global Hub?')" title="Delete"><i class="fa fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 50px; opacity: 0.6;">
+                            <i class="fa fa-folder-open" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+                            No platform global resources yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+</html>

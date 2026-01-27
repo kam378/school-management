@@ -47,6 +47,12 @@
             </a>
         </li>
         <li>
+            <a href="{% url 'learning_locker:student_locker' %}" class="{% if 'locker' in request.path %}active{% endif %}">
+                <i class="fa fa-vault"></i>
+                <span>Learning Locker</span>
+            </a>
+        </li>
+        <li>
             <a href="{% url 'student_attendance' %}" class="{% if 'attendance' in request.path %}active{% endif %}">
                 <i class="fa fa-check-circle"></i>
                 <span>Attendance</span>
@@ -80,7 +86,7 @@
         {% endif %}
         {% if school_settings.enable_chat %}
         <li>
-            <a href="/chat/">
+            <a href="{% url 'chat_dashboard' %}" class="{% if 'chat' in request.path %}active{% endif %}">
                 <i class="fa fa-comments"></i>
                 <span>Chat</span>
             </a>

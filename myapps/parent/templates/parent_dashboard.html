@@ -96,6 +96,9 @@
                             <div class="child-info">
                                 <h3>{{ data.obj.get_full_name }}</h3>
                                 <p>{{ data.classroom.name|default:"Not Assigned" }} • {{ data.obj.custom_id }}</p>
+                                <p style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600; margin-top: 5px;">
+                                    <i class="fa fa-calendar-check"></i> Showing: {{ data.active_term_name }}
+                                </p>
                             </div>
                         </div>
                         <div class="stat-grid">
@@ -146,7 +149,7 @@
                 <div class="card" style="background: var(--primary-color); color: #fff;">
                     <h3 style="margin-top: 0; font-size: 1rem;">Need Assistance?</h3>
                     <p style="font-size: 0.85rem; opacity: 0.9;">Contact the admin or teacher via the Chat System if you have questions regarding your child's progress.</p>
-                    <a href="#" class="btn-submit" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); text-align: center; text-decoration: none; display: block; margin-top: 15px;">Open Chat</a>
+                    <a href="{% url 'chat_dashboard' %}" class="btn-submit" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); text-align: center; text-decoration: none; display: block; margin-top: 15px;">Open Chat</a>
                 </div>
             </div>
         </div>
