@@ -11,7 +11,9 @@
 </head>
 <body>
 
-    {% if is_teacher %}
+    {% if request.user.role == 'school_admin' %}
+        {% include "admin_aside.html" %}
+    {% elif request.user.role == 'teacher' or is_teacher %}
         {% include "teacher_aside.html" %}
     {% else %}
         {% include "student_aside.html" %}

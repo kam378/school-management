@@ -39,9 +39,14 @@
                     <p style="font-size: 0.85rem; color: var(--text-muted);">{{ class.classroom.students.count }} Students Enrolled</p>
                     
                     <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <a href="{% url 'admin_mark_attendance' %}?classroom={{ class.classroom.id }}" class="btn-module" style="background: #10b981; border: none; flex: 1; margin: 0;">
+                            <i class="fa fa-calendar-check"></i> Attendance
+                        </a>
                         <a href="{% url 'teacher_gradebook' class.id %}" class="btn-module" style="flex: 1; margin: 0;">
                             <i class="fa fa-table"></i> Gradebook
                         </a>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <a href="{% url 'teacher_add_assignment' %}" class="btn-module" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); flex: 1; margin: 0;">
                             <i class="fa fa-plus"></i> Assignment
                         </a>

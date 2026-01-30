@@ -1,0 +1,92 @@
+{% extends 'super_admin_base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+        <a href="{% url 'super_admin_users' %}" class="hover:text-indigo-600 transition-colors">Administrators</a>
+        <i class="fa fa-chevron-right text-[8px]"></i>
+        <span class="{% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %}">{{ title }}</span>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} tracking-tight">{{ title }}</h1>
+            <p class="text-gray-500 font-medium mt-1">Manage secondary root accounts with full platform access</p>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="glass-card">
+        <form method="POST" class="space-y-8">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Username Field -->
+                <div>
+                    <label>Auth Identifier (Username)</label>
+                    <div class="input-group">
+                        {{ form.username }}
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label>Secure Dispatch (Email)</label>
+                    <div class="input-group">
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <!-- Name Fields -->
+                <div>
+                    <label>First Register Name</label>
+                    <div class="input-group">
+                        {{ form.first_name }}
+                    </div>
+                </div>
+                <div>
+                    <label>Last Register Name</label>
+                    <div class="input-group">
+                        {{ form.last_name }}
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="md:col-span-2">
+                    <label>Security Cipher (Password)</label>
+                    <div class="input-group">
+                        {{ form.password }}
+                    </div>
+                    {% if form.instance.pk %}
+                        <p style="font-size: 9px; color: #f59e0b; font-weight: 800; text-transform: uppercase; margin-top: 0.5rem;">Leave blank to keep existing encrypted seal</p>
+                    {% endif %}
+                </div>
+
+                <!-- Status Check -->
+                <div class="md:col-span-2" style="background: var(--primary-color); background-opacity: 0.05; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin-bottom: 0;">
+                        {{ form.is_active }}
+                        <div>
+                            <span style="display: block; font-size: 0.875rem; font-weight: 800; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %};">Node Access Provisioned</span>
+                            <p style="font-size: 0.625rem; color: var(--muted-text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Check to enable full administrative capabilities</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-end; gap: 1.5rem;">
+                <a href="{% url 'super_admin_users' %}" class="btn-sa btn-sa-secondary">
+                    Revoke Edit
+                </a>
+                <button type="submit" class="btn-sa btn-sa-primary">
+                    <i class="fa fa-shield-halved"></i>
+                    Sync Administrator Node
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

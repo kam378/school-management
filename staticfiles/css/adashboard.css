@@ -1,0 +1,330 @@
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+/* Main Container */
+
+main{
+  height: 100%;
+  background-color: var(--background-color);
+  transition: all 1s;
+  overflow-y: hidden;
+}
+
+.main-content{
+  height: 91.5vh;
+  width: 100%;
+  overflow-y: scroll;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+main .header{
+  width: 100%;
+  height: 8.5vh;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px ;
+}
+
+main .header h1{
+  font-family: "Inter-Light";
+  font-size: 20px;
+}
+
+main .header div{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+main .header button{
+  background-color: transparent;
+  border: none;
+  position: relative;
+}
+
+.notification-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.notification-icon:hover{
+  color: purple;
+}
+
+.settings-icon{
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--nav-background-color);
+}
+
+.settings-icon:hover{
+  color: purple;
+}
+
+main .header button span{
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: red;
+  border-radius: 50%;
+  font-size: 15px;
+  color: white;
+}
+
+.top-cards{
+  width: 100%;
+  height: 27vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 25px 0px;
+}
+
+.top-cards .card{
+  width: 30%;
+  height: 100%;
+  border-radius: 10px;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  transition: all 0.2s;
+}
+
+.top-cards .card:hover{
+  margin-bottom: 10px;
+  box-shadow: 0px 5px 15px 5px rgba(0, 0, 0, 0.1);
+}
+
+.top-cards .card1{
+  border-left: 4px solid #9333EA;
+}
+
+.top-cards .card2{
+  border-left: 4px solid #2563EB;
+}
+
+.top-cards .card3{
+  border-left: 4px solid #16A343;
+}
+
+.card-calendar{
+  background-color: #F3E8FF;
+  color: #9333EA;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.card-tasks{
+  background-color: #DBEAFE;
+  color: #2563EB;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.card-line-chart{
+  background-color: #DCFCE7;
+  color: #16A343;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.top-cards .card .card-info{
+  width: 70%;
+}
+
+.top-cards .card .card-info h3{
+  font-family: "Inter-Light";  
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.top-cards .card .card-info p{
+  font-family: "Inter-Light";
+  font-size: 16px;
+  margin-top: 5px;
+  color: var(--secondary-text-color);
+}
+
+.quick-access{
+  width: 95%;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 25px 0px;
+}
+
+.quick-access .card{
+  width: 100%;
+  height: 100%;
+  background-color: var(--secondary-color);
+  box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.card .heading{
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0px 0px 10px;
+}
+
+.card .heading h3{
+  font-family: "Inter-Light";
+  letter-spacing: 1px;
+}
+
+.card .heading a{
+  text-decoration: none;
+  color: #9333EA;
+}
+
+.quick-access .card .items a{
+  width: 45%;
+  height: 40%;
+  text-decoration: none;
+}
+
+.quick-access .card .items{
+  width: 100%;
+  height: 100%;
+  gap: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card .items .item{
+  width: 100%;
+  height: 100%;
+  padding: 10px 5px;
+  transition: all 0.5s;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border-radius: 20px;
+}
+
+.card .items .item:hover{
+  box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.1);
+}
+
+.card .items .item h4{
+  /* font-size: 13px; */
+  font-family: "Inter-light";
+  letter-spacing: 1px;
+}
+
+.card .items .item p{
+  font-size: 13px;
+  margin: 3px 0px 0px;
+  color: var(--text-color);
+}
+
+.card .items .item .footer{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer small{
+  font-size: 12px;
+  color: var(--secondary-text-color);
+}
+
+.footer .pending{
+  color: red;
+}
+
+.footer small a{
+  text-decoration: none;
+  color: #9333EA;
+}
+
+@media (max-width: 1000px){
+  /* main{
+    height: 100% !important;
+    overflow: hidden;
+  } */
+
+  .main-content{
+    overflow-y: scroll !important;
+    height: 91.5vh !important;
+    padding-bottom: 20vh;
+  }
+
+  .top-cards{
+    height: fit-content;
+    flex-wrap: wrap;
+  }
+
+  .top-cards .card{
+    width: 90%;
+    /* height: 17vh; */
+    padding: 50px 0px;
+  }
+
+  .quick-access{
+    height: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .quick-access .card{
+    width: 90%;
+  }
+
+  main .header{
+    padding: 30px 20px;
+    /* display: none; */
+  }
+
+}
+
+@media (max-width: 450px) {
+.quick-access .card .items a{
+  width: 100%;
+  height: 40%;
+  text-decoration: none;
+}
+}

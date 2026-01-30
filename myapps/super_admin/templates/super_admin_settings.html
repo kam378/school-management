@@ -1,0 +1,167 @@
+{% extends 'super_admin_base.html' %}
+
+{% block content %}
+<div class="space-y-10">
+    <!-- Header -->
+    <div class="mb-10">
+        <h1 class="text-3xl font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} tracking-tight">System Configuration</h1>
+        <p class="text-gray-500 font-medium mt-1">Control platform branding, global theme states, and core infrastructure identity</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <!-- Settings Form -->
+        <div class="glass-card p-10 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+            
+            <h3 class="text-xl font-black mb-8 {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} flex items-center gap-3">
+                <i class="fa fa-sliders text-indigo-500"></i> Platform Metadata
+            </h3>
+            
+            <form method="POST" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                
+                <div>
+                    <label>Platform Deployment Name</label>
+                    <div class="input-group">
+                        {{ form.platform_name }}
+                    </div>
+                </div>
+
+                <div>
+                    <label>Primary Brand Signature (Color)</label>
+                    <div style="display: flex; align-items: center; gap: 1.5rem; padding: 1rem; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.03){% else %}#f8fafc{% endif %}; border-radius: 1.25rem; border: 1px solid var(--border-color);">
+                        <div style="height: 3rem; width: 3rem; border-radius: 0.875rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 2px solid white;">
+                            <style>input[type="color"] { border: none; padding: 0; width: 100%; height: 100%; cursor: pointer; }</style>
+                            {{ form.primary_color }}
+                        </div>
+                        <div>
+                            <span id="color-code" style="font-family: monospace; font-size: 0.875rem; font-weight: 700; color: var(--muted-text);">{{ settings.primary_color }}</span>
+                            <p style="font-size: 9px; color: var(--muted-text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem;">Hexadecimal Value</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label>System Logo Asset</label>
+                    <div style="padding: 2rem; border: 2px dashed var(--border-color); border-radius: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; transition: all 0.2s ease;" class="logo-dropzone">
+                        {{ form.logo }}
+                        {% if settings.logo %}
+                            <img src="{{ settings.logo.url }}" alt="Current Logo" style="max-height: 3rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                        {% else %}
+                            <i class="fa fa-cloud-arrow-up" style="font-size: 2rem; color: var(--border-color);"></i>
+                        {% endif %}
+                        <p style="font-size: 10px; color: var(--muted-text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Supports SVG, PNG (Transparent)</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--primary-color); background-opacity: 0.05; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin-bottom: 0;">
+                        {{ form.is_dark_mode }}
+                        <div>
+                            <span style="display: block; font-size: 0.875rem; font-weight: 800; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %};">Force Platform Dark Mode</span>
+                            <p style="font-size: 0.625rem; color: var(--muted-text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Applies universal deep slate theme</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <button type="submit" class="btn-sa btn-sa-primary" style="width: 100%;">
+                        <i class="fa fa-save"></i> Commit Global Config
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="space-y-8">
+            <div class="glass-card relative overflow-hidden">
+                <h3 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.5rem; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %}; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fa fa-eye" style="color: #10b981;"></i> Visual Registry Preview
+                </h3>
+                <p style="font-size: 0.625rem; color: var(--muted-text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2.5rem;">Real-time infrastructure appearance simulation</p>
+                
+                <div class="space-y-8">
+                    <!-- Sidebar Preview -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="font-size: 10px; font-weight: 800; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.1em;">Sidebar Simulation</p>
+                        <div id="preview-sidebar" style="width: 100%; max-width: 200px; padding: 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; transition: all 0.5s ease; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); background: {% if settings.is_dark_mode %}#0b0e14{% else %}#2c3e50{% endif %}; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="height: 2.5rem; width: 2.5rem; background: var(--primary-color); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+                                {% if settings.logo %}
+                                    <img id="preview-logo" src="{{ settings.logo.url }}" style="height: 1.25rem; width: 1.25rem; object-fit: contain;">
+                                {% else %}
+                                    <i id="preview-icon" class="fa fa-shield-halved" style="font-size: 1.25rem; color: white;"></i>
+                                {% endif %}
+                            </div>
+                            <span id="preview-name" style="font-size: 0.625rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">{{ settings.platform_name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Component Previews -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div style="padding: 1.5rem; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.03){% else %}#f8fafc{% endif %}; border-radius: 1.5rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem;">
+                            <p style="font-size: 9px; font-weight: 800; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.1em;">Primary Control</p>
+                            <button id="preview-btn" style="width: 100%; height: 2.5rem; border: none; border-radius: 0.75rem; font-size: 0.625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: white; cursor: default; background: {{ settings.primary_color }};">
+                                Execute
+                            </button>
+                        </div>
+                        <div style="padding: 1.5rem; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.03){% else %}#f8fafc{% endif %}; border-radius: 1.5rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; items: center; justify-content: center; gap: 0.5rem;">
+                            <p style="font-size: 9px; font-weight: 800; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.1em; align-self: flex-start;">Active Link</p>
+                            <span id="preview-link" style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; color: {{ settings.primary_color }};">
+                                <i class="fa fa-bolt"></i> Cluster
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-sa alert-sa-warning">
+                <i class="fa fa-circle-exclamation"></i>
+                <div>
+                    <h4>Propagating Theme Sync</h4>
+                    <p>Changes made here are applied at the platform core level and affect all tenants in the global registry hub. Exercise caution when forcing theme states.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const nameInput = document.querySelector('input[name="platform_name"]');
+    const colorInput = document.querySelector('input[name="primary_color"]');
+    const darkInput = document.querySelector('input[name="is_dark_mode"]');
+    const previewName = document.getElementById('preview-name');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewLink = document.getElementById('preview-link');
+    const previewIcon = document.getElementById('preview-icon');
+    const previewSidebar = document.getElementById('preview-sidebar');
+    const colorCode = document.getElementById('color-code');
+
+    if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+            previewName.textContent = e.target.value || 'EduManage';
+        });
+    }
+
+    if (colorInput) {
+        colorInput.addEventListener('input', (e) => {
+            const color = e.target.value;
+            previewBtn.style.background = color;
+            previewLink.style.color = color;
+            if (previewIcon) previewIcon.style.color = color;
+            colorCode.textContent = color.toUpperCase();
+        });
+    }
+
+    if (darkInput) {
+        darkInput.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                previewSidebar.style.background = '#0b0e14';
+            } else {
+                previewSidebar.style.background = '#2c3e50';
+            }
+        });
+    }
+</script>
+{% endblock %}

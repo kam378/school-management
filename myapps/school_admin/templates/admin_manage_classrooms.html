@@ -90,6 +90,7 @@
                                 </span>
                             </td>
                             <td class="actions">
+                                <a href="{% url 'admin_mark_attendance' %}?classroom={{ classroom.id }}" class="edit" style="color: #6366f1;" title="Mark Attendance"><i class="fa fa-calendar-check"></i></a>
                                 <a href="{% url 'admin_edit_classroom' classroom.id %}" class="edit" title="Edit Classroom"><i class="fa fa-pen"></i></a>
                                 <a href="{% url 'admin_delete_classroom' classroom.id %}" 
                                    class="delete" 

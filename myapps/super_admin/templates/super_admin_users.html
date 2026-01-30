@@ -1,0 +1,103 @@
+{% extends 'super_admin_base.html' %}
+
+{% block content %}
+<div class="space-y-10">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} tracking-tight">System Administrators</h1>
+            <p class="text-gray-500 font-medium mt-1">Manage platform-level accounts with root database privileges</p>
+        </div>
+        <a href="{% url 'super_admin_user_create' %}" class="btn-sa btn-sa-primary">
+            <i class="fa fa-plus-circle"></i> Add Administrator
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="space-y-3">
+        {% for message in messages %}
+        <div class="px-6 py-4 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-3 font-bold text-sm {% if global_settings.is_dark_mode %}bg-emerald-500/10 border-emerald-500/20 text-emerald-400{% endif %}">
+            <i class="fa fa-check-circle"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Admins Table Card -->
+    <div class="glass-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100/10">
+                        <th class="px-8 py-6">Administrator Node</th>
+                        <th class="px-8 py-6">Username Registry</th>
+                        <th class="px-8 py-6">Security Context</th>
+                        <th class="px-8 py-6">Access Status</th>
+                        <th class="px-8 py-6 text-right">Account Ops</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100/10">
+                    {% for admin in admins %}
+                    <tr class="group hover:bg-gray-50/30 transition-colors">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-sm shadow-lg group-hover:rotate-6 transition-transform">
+                                    {{ admin.username|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %}">{{ admin.get_full_name|default:"Unnamed System Root" }}</div>
+                                    <div class="text-[10px] text-gray-400 font-mono">{{ admin.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <span class="text-sm font-bold text-gray-500 {% if global_settings.is_dark_mode %}text-gray-400{% endif %}">@{{ admin.username }}</span>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2 py-1 bg-gray-50 rounded-lg border border-gray-100 inline-block {% if global_settings.is_dark_mode %}bg-white/5 border-white/10{% endif %}">
+                                System Master
+                            </div>
+                            <div class="text-[9px] font-bold text-gray-300 mt-1 uppercase">Last activity: {{ admin.last_login|date:"M d, H:i"|default:"Registry Clean" }}</div>
+                        </td>
+                        <td class="px-8 py-6">
+                            {% if admin.is_active %}
+                                <div class="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Provisioned (Active)
+                                </div>
+                            {% else %}
+                                <div class="flex items-center gap-2 text-red-400 text-[10px] font-black uppercase tracking-widest">
+                                    <span class="h-2 w-2 rounded-full bg-red-400"></span>
+                                    Revoked (Disabled)
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex justify-end gap-3 transition-opacity">
+                                <a href="{% url 'super_admin_user_edit' admin.pk %}" class="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm {% if global_settings.is_dark_mode %}bg-white/5 text-blue-400 hover:bg-white/10{% endif %}" title="Modify Privileges">
+                                    <i class="fa fa-pen"></i>
+                                </a>
+                                {% if request.user != admin %}
+                                <a href="{% url 'super_admin_user_delete' admin.pk %}" onclick="return confirm('Execute final account termination?')" class="h-9 w-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm {% if global_settings.is_dark_mode %}bg-white/5 text-red-400 hover:bg-white/10{% endif %}" title="Revoke Root">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                                {% else %}
+                                <div class="h-9 w-9 rounded-xl bg-gray-50 text-gray-300 flex items-center justify-center cursor-not-allowed {% if global_settings.is_dark_mode %}bg-white/5 text-gray-700{% endif %}" title="Self-Termination Shielded">
+                                    <i class="fa fa-lock"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-8 py-20 text-center italic text-gray-400">No additional root administrators provisioned.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

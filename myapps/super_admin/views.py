@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from myapps.customers.models import Client, Domain
-from .forms import TenantForm, SubscriptionPlanForm, GlobalSettingsForm
-
+from .forms import TenantForm, SubscriptionPlanForm, GlobalSettingsForm, SuperAdminUserForm, PlatformResourceForm
 from myapps.accounts.models import User
-from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
-from .models import GlobalSetting, SubscriptionPlan
+from .models import GlobalSetting, SubscriptionPlan, PlatformAuditLog
 from .utils import QuotaManager
+from myapps.school_admin.utils import log_action
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.core.signing import TimestampSigner
 
 
 
@@ -327,3 +329,67 @@ def platform_audit_logs(request):
     }
 
     return render(request, 'super_admin_audit_logs.html', context)
+
+@user_passes_test(super_admin_check)
+def super_admin_user_list(request):
+    admins = User.objects.filter(is_superuser=True).order_by('username')
+    return render(request, 'super_admin_users.html', {'admins': admins})
+
+@user_passes_test(super_admin_check)
+def super_admin_user_create(request):
+    if request.method == 'POST':
+        form = SuperAdminUserForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
+            log_action(request.user, 'CREATE', 'User (Super Admin)', user.pk, f"Created super admin account: {user.username}")
+            messages.success(request, f"Super Admin '{user.username}' created successfully.")
+            return redirect('super_admin_users')
+    else:
+        form = SuperAdminUserForm()
+    return render(request, 'super_admin_user_form.html', {'form': form, 'title': 'Add Administrator'})
+
+@user_passes_test(super_admin_check)
+def super_admin_user_edit(request, pk):
+    admin = get_object_or_404(User, pk=pk, is_superuser=True)
+    if request.method == 'POST':
+        form = SuperAdminUserForm(request.POST, instance=admin)
+        if form.is_valid():
+            form.save()
+            log_action(request.user, 'UPDATE', 'User (Super Admin)', admin.pk, f"Updated super admin account: {admin.username}")
+            messages.success(request, f"Super Admin '{admin.username}' updated successfully.")
+            return redirect('super_admin_users')
+    else:
+        form = SuperAdminUserForm(instance=admin)
+    return render(request, 'super_admin_user_form.html', {'form': form, 'title': f'Edit Admin: {admin.username}'})
+
+@user_passes_test(super_admin_check)
+def super_admin_user_delete(request, pk):
+    admin = get_object_or_404(User, pk=pk, is_superuser=True)
+    if admin == request.user:
+        messages.error(request, "Security Breach Prevention: You cannot terminate your own administrative root session.")
+    else:
+        try:
+            username = admin.username
+            # We use raw SQL deletion here because standard admin.delete() triggers 
+            # a Django Collector check for related objects in ALL installed apps.
+            # In a multi-tenant setup, tenant-specific tables (like 'core_notification')
+            # do not exist in the public schema, causing a "relation does not exist" error.
+            # Raw SQL deletion bypasses the Django collector while still respecting 
+            # actual database-level constraints in the public schema.
+            from django.db import connection
+            with connection.cursor() as cursor:
+                # 1. Nullify references in public schema tables that would block deletion
+                cursor.execute("UPDATE super_admin_platformauditlog SET user_id = NULL WHERE user_id = %s", [admin.pk])
+                cursor.execute("UPDATE django_admin_log SET user_id = NULL WHERE user_id = %s", [admin.pk])
+                
+                # 2. Finally, delete the user
+                cursor.execute("DELETE FROM accounts_user WHERE id = %s", [admin.pk])
+                
+            log_action(request.user, 'DELETE', 'User (Super Admin)', pk, f"Deleted super admin account: {username}")
+            messages.success(request, f"System Administrator account '@{username}' has been successfully purged from the registry.")
+        except Exception as e:
+            messages.error(request, f"Registry Operation Failed: Could not delete admin account. Error: {str(e)}")
+    return redirect('super_admin_users')

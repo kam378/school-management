@@ -1,113 +1,65 @@
 {% load static %}
-<aside class="sidebar">
-    <style>
-        :root {
-            --primary-color: {{ global_settings.primary_color|default:"#4a90e2" }} !important;
-            {% if global_settings.is_dark_mode %}
-            --bg-color: #121212 !important;
-            --card-bg: #1e1e1e !important;
-            --text-color: #f5f5f5 !important;
-            --text-muted: #b0b0b0 !important;
-            --border-color: #333333 !important;
-            --shadow-color: rgba(0,0,0,0.5) !important;
-            {% endif %}
-        }
-
-        {% if global_settings.is_dark_mode %}
-        body {
-            background-color: var(--bg-color) !important;
-            color: var(--text-color) !important;
-        }
-        .main-content {
-            background-color: var(--bg-color) !important;
-        }
-        .card, .stat-card, .recent-section, .resource-form-container {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-color) !important;
-        }
-        h1, h2, h3, h4, .label, label {
-            color: var(--text-color) !important;
-        }
-        .premium-table {
-            color: var(--text-color) !important;
-        }
-        .premium-table thead th {
-            background: rgba(255,255,255,0.05) !important;
-            color: var(--text-color) !important;
-            border-bottom: 1px solid var(--border-color) !important;
-        }
-        .premium-table tbody tr {
-            border-bottom: 1px solid var(--border-color) !important;
-        }
-        .premium-table tbody tr:hover {
-            background: rgba(255,255,255,0.02) !important;
-        }
-        {% endif %}
-    </style>
-    <div class="sidebar-header" style="justify-content: flex-start; gap: 15px;">
+<!-- Brand Area -->
+<div class="brand-section" style="margin-bottom: 2.5rem; padding: 0 0.5rem; display: flex; align-items: center; gap: 1rem;">
+    <div style="width: 2.75rem; height: 2.75rem; background: var(--primary-color); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); flex-shrink: 0;">
         {% if global_settings.logo %}
-            <img src="{{ global_settings.logo.url }}" style="max-height: 35px; max-width: 100%;">
+            <img src="{{ global_settings.logo.url }}" style="height: 1.5rem; width: 1.5rem; object-fit: contain;">
         {% else %}
-            <i class="fa fa-shield-halved" style="color: var(--primary-color);"></i>
+            <i class="fa fa-shield-halved" style="font-size: 1.25rem;"></i>
         {% endif %}
-        <h2 style="font-size: 1.1rem; margin: 0;">{{ global_settings.platform_name|default:"System Admin" }}</h2>
     </div>
+    <div style="overflow: hidden;">
+        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--primary-color); line-height: 1; margin-bottom: 0.25rem;">Infrastructure</div>
+        <div style="font-size: 0.875rem; font-weight: 800; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Control Center</div>
+    </div>
+</div>
 
-    <ul class="nav-links">
-        <li>
-            <a href="{% url 'super_admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'super_admin_dashboard' %}active{% endif %}">
-                <i class="fa fa-gauge-high"></i> Global Overview
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'super_admin_schools' %}" class="{% if 'schools' in request.path %}active{% endif %}">
-                <i class="fa fa-school"></i> Manage Schools
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'super_admin_plans' %}" class="{% if 'plans' in request.path %}active{% endif %}">
-                <i class="fa fa-tags"></i> Subscription Plans
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'system_settings' %}" class="{% if 'settings' in request.path %}active{% endif %}">
-                <i class="fa fa-cog"></i> System Settings
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'manage_platform_resources' %}" class="{% if 'resources' in request.path %}active{% endif %}">
-                <i class="fa fa-book-atlas"></i> Master Library
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'platform_audit_logs' %}" class="{% if 'audit-logs' in request.path %}active{% endif %}">
-                <i class="fa fa-clipboard-list"></i> Security Logs
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'toggle_theme' %}">
-                <i class="fa {% if global_settings.is_dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i> 
-                Toggle {% if global_settings.is_dark_mode %}Light{% else %}Dark{% endif %} Mode
-            </a>
-        </li>
+<!-- Navigation Menu -->
+<nav class="nav-menu" style="flex: 1;">
+    <a href="{% url 'super_admin_dashboard' %}" class="nav-link-sa {% if request.resolver_match.url_name == 'super_admin_dashboard' %}active{% endif %}">
+        <i class="fa fa-chart-pie"></i>
+        <span>Global Overview</span>
+    </a>
+    <a href="{% url 'super_admin_schools' %}" class="nav-link-sa {% if 'schools' in request.path %}active{% endif %}">
+        <i class="fa fa-school"></i>
+        <span>Manage Schools</span>
+    </a>
+    <a href="{% url 'super_admin_plans' %}" class="nav-link-sa {% if 'plans' in request.path %}active{% endif %}">
+        <i class="fa fa-gem"></i>
+        <span>Subscription Plans</span>
+    </a>
+    <a href="{% url 'system_settings' %}" class="nav-link-sa {% if 'settings' in request.path %}active{% endif %}">
+        <i class="fa fa-sliders"></i>
+        <span>System Settings</span>
+    </a>
+    <a href="{% url 'manage_platform_resources' %}" class="nav-link-sa {% if 'resources' in request.path %}active{% endif %}">
+        <i class="fa fa-book-bookmark"></i>
+        <span>Master Library</span>
+    </a>
+    <a href="{% url 'platform_audit_logs' %}" class="nav-link-sa {% if 'audit-logs' in request.path %}active{% endif %}">
+        <i class="fa fa-fingerprint"></i>
+        <span>Security Vault</span>
+    </a>
+    <a href="{% url 'super_admin_users' %}" class="nav-link-sa {% if 'users' in request.path %}active{% endif %}">
+        <i class="fa fa-shield-user"></i>
+        <span>Admin Control</span>
+    </a>
+</nav>
 
-
-        <li>
-            <a href="/admin/" target="_blank">
-                <i class="fa fa-database"></i> Django Admin (Main)
-            </a>
-        </li>
-    </ul>
-
-    <div class="user-profile">
-        <div class="avatar" style="background: var(--primary-color);">SA</div>
-        <div>
-            <div style="font-weight: 600;">System Administrator</div>
-            <div style="font-size: 0.8rem; color: #888;">Global Root</div>
+<!-- User Footer -->
+<div class="user-footer" style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+    <div style="padding: 1rem; border-radius: 1.25rem; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.03){% else %}rgba(0,0,0,0.02){% endif %}; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; background: linear-gradient(135deg, #6b7280, #374151); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                {{ request.user.username|first|upper }}
+            </div>
+            <div style="overflow: hidden; max-width: 100px;">
+                <div style="font-size: 0.75rem; font-weight: 800; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ request.user.username }}</div>
+                <div style="font-size: 0.625rem; font-weight: 600; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Root</div>
+            </div>
         </div>
-        <a href="{% url 'logout' %}" style="margin-left: auto; color: #d9534f;" title="Logout">
-            <i class="fa fa-sign-out-alt"></i>
+        <a href="{% url 'logout' %}" style="width: 2rem; height: 2rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: var(--muted-text); transition: all 0.2s ease; text-decoration: none;" onmouseover="this.style.color='#ef4444'; this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.color='var(--muted-text)'; this.style.background='transparent'">
+            <i class="fa fa-power-off" style="font-size: 0.875rem;"></i>
         </a>
     </div>
-</aside>
+</div>

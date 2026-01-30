@@ -1,137 +1,165 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Dashboard - System Admin</title>
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+{% extends 'super_admin_base.html' %}
 
-    {% include "super_admin_aside.html" %}
-
-    <main class="main-content">
-        <div class="header-bar">
-            <div style="display: flex; align-items: center;">
-                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <h1 style="font-size: 1.5rem; margin: 0;">System Overview</h1>
+{% block content %}
+<div class="space-y-10">
+    <!-- Hero Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div>
+            <h1 class="text-3xl font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} tracking-tight">System Pulse</h1>
+            <p class="text-gray-500 font-medium mt-1">Real-time infrastructure health and population metrics</p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'toggle_maintenance' %}" class="flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 border
+                        {% if maintenance_active %}bg-red-600 text-white border-red-500 shadow-red-200/50{% else %}bg-amber-500/10 text-amber-600 border-amber-500/20 shadow-amber-500/5 {% if global_settings.is_dark_mode %}bg-amber-500/5 text-amber-400{% endif %}{% endif %}">
+                <i class="fa fa-power-off"></i>
+                {% if maintenance_active %}Maintenance Mode Active{% else %}Maintenance: Off{% endif %}
+            </a>
+            <div class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 flex items-center gap-2">
+                <i class="fa fa-circle text-[8px] animate-pulse text-emerald-400"></i>
+                Cluster Online
             </div>
-            <div class="header-actions">
-                <a href="{% url 'toggle_maintenance' %}" class="badge" style="background: {% if maintenance_active %}rgba(231, 76, 60, 0.1){% else %}rgba(46, 204, 113, 0.1){% endif %}; color: {% if maintenance_active %}#e74c3c{% else %}#2ecc71{% endif %}; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa fa-power-off"></i>
-                    {% if maintenance_active %}Maintenance: ON{% else %}Maintenance: OFF{% endif %}
-                </a>
-                <span class="badge" style="background: rgba(74, 144, 226, 0.1); color: var(--primary-color);">System Active</span>
-            </div>
+        </div>
+    </div>
 
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-8 group relative overflow-hidden">
+            <div class="absolute top-0 right-0 h-24 w-24 bg-blue-500/5 blur-2xl rounded-full -mr-10 -mt-10"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Institutions</div>
+                    <div class="text-4xl font-black tracking-tighter group-hover:text-blue-500 transition-colors {% if global_settings.is_dark_mode %}text-white{% endif %}">{{ total_schools }}</div>
+                </div>
+                <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl transition-transform group-hover:scale-110 group-hover:rotate-3 {% if global_settings.is_dark_mode %}bg-white/5 text-blue-400{% endif %}">
+                    <i class="fa fa-building-columns"></i>
+                </div>
+            </div>
+            <div class="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
+                <i class="fa fa-arrow-trend-up"></i>
+                <span>Active Nodes</span>
+            </div>
         </div>
 
-        <!-- Global Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(74, 144, 226, 0.1); color: var(--primary-color);">
-                    <i class="fa fa-building"></i>
+        <div class="glass-card p-8 group relative overflow-hidden">
+            <div class="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 blur-2xl rounded-full -mr-10 -mt-10"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Global Students</div>
+                    <div class="text-4xl font-black tracking-tighter group-hover:text-indigo-500 transition-colors {% if global_settings.is_dark_mode %}text-white{% endif %}">{{ total_students }}</div>
                 </div>
-                <div class="stat-info">
-                    <h3>{{ total_schools }}</h3>
-                    <p>Total Schools</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db;">
+                <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl transition-transform group-hover:scale-110 group-hover:rotate-3 {% if global_settings.is_dark_mode %}bg-white/5 text-indigo-400{% endif %}">
                     <i class="fa fa-user-graduate"></i>
                 </div>
-                <div class="stat-info">
-                    <h3>{{ total_students }}</h3>
-                    <p>Global Students</p>
-                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;">
+            <div class="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                <i class="fa fa-users"></i>
+                <span>Infrastructure Load</span>
+            </div>
+        </div>
+
+        <div class="glass-card p-8 group relative overflow-hidden">
+            <div class="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 blur-2xl rounded-full -mr-10 -mt-10"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Global Teachers</div>
+                    <div class="text-4xl font-black tracking-tighter group-hover:text-emerald-500 transition-colors {% if global_settings.is_dark_mode %}text-white{% endif %}">{{ total_teachers }}</div>
+                </div>
+                <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl transition-transform group-hover:scale-110 group-hover:rotate-3 {% if global_settings.is_dark_mode %}bg-white/5 text-emerald-400{% endif %}">
                     <i class="fa fa-chalkboard-user"></i>
                 </div>
-                <div class="stat-info">
-                    <h3>{{ total_teachers }}</h3>
-                    <p>Global Teachers</p>
-                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(155, 89, 182, 0.1); color: #9b59b2;">
-                    <i class="fa fa-users-rectangle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>{{ total_parents }}</h3>
-                    <p>Global Parents</p>
-                </div>
+            <div class="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                <i class="fa fa-check-double"></i>
+                <span>Verified Personnel</span>
             </div>
         </div>
 
-        <!-- Recent Schools -->
-        <div class="recent-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 1.2rem; margin: 0;">Recently Registered Schools</h2>
-                <a href="{% url 'super_admin_schools' %}" class="btn-module" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-color);">
-                    View All Schools
-                </a>
+        <div class="glass-card p-8 group relative overflow-hidden">
+            <div class="absolute top-0 right-0 h-24 w-24 bg-amber-500/5 blur-2xl rounded-full -mr-10 -mt-10"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Global Guardians</div>
+                    <div class="text-4xl font-black tracking-tighter group-hover:text-amber-500 transition-colors {% if global_settings.is_dark_mode %}text-white{% endif %}">{{ total_parents }}</div>
+                </div>
+                <div class="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl transition-transform group-hover:scale-110 group-hover:rotate-3 {% if global_settings.is_dark_mode %}bg-white/5 text-amber-400{% endif %}">
+                    <i class="fa fa-users-viewfinder"></i>
+                </div>
             </div>
-            
-            <div class="premium-table-container">
-                <table class="premium-table">
-                    <thead>
-                        <tr>
-                            <th>School Name</th>
-                            <th>Schema</th>
-                            <th>Domains</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for school in recent_schools %}
-                        <tr>
-                            <td data-label="School Name">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="stat-icon" style="width: 35px; height: 35px; font-size: 0.9rem; background: rgba(74, 144, 226, 0.1); color: var(--primary-color); border-radius: 8px;">
-                                        <i class="fa fa-school"></i>
-                                    </div>
-                                    <span style="font-weight: 600;">{{ school.name }}</span>
+            <div class="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-400">
+                <i class="fa fa-link"></i>
+                <span>Family Links active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="glass-card overflow-hidden">
+        <div class="px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100/10">
+            <div>
+                <h3 class="text-xl font-black tracking-tight {% if global_settings.is_dark_mode %}text-white{% endif %}">Cluster Deployment Activity</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-black mt-1">Recently provisioned infrastructure nodes</p>
+            </div>
+            <a href="{% url 'super_admin_schools' %}" class="bg-gray-500/10 hover:bg-gray-500/20 {% if global_settings.is_dark_mode %}bg-white/5 hover:bg-white/10 text-white{% endif %} px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                Registry Hub
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100/10">
+                        <th class="px-8 py-6">Node Signature</th>
+                        <th class="px-8 py-6">Schema Identifier</th>
+                        <th class="px-8 py-6">Deployment Date</th>
+                        <th class="px-8 py-6 text-right">Quick Ops</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100/10">
+                    {% for school in recent_schools %}
+                    <tr class="group hover:bg-indigo-500/5 transition-colors">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-base shadow-lg group-hover:rotate-6 transition-transform">
+                                    <i class="fa fa-school"></i>
                                 </div>
-                            </td>
-                            <td data-label="Schema"><span class="status-badge status-schema">{{ school.schema_name }}</span></td>
-                            <td data-label="Domains">
-                                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                                    {% for d in school.domains.all %}
-                                    <span class="badge" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-muted);">{{ d.domain }}</span>
-                                    {% endfor %}
+                                <div>
+                                    <div class="text-sm font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %}">{{ school.name }}</div>
+                                    <div class="text-[9px] text-gray-400 font-mono">UUID: SY-{{ school.pk|stringformat:"04d" }}</div>
                                 </div>
-                            </td>
-                            <td data-label="Created">{{ school.created_on|date:"M d, Y" }}</td>
-                            <td data-label="Actions" class="actions">
-                                <a href="{% url 'super_admin_impersonate' school.pk %}" class="impersonate" title="Login as Admin" style="color: #f39c12; margin-right: 15px;">
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1.5 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-indigo-500/20">
+                                {{ school.schema_name }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 text-xs font-black text-gray-400 uppercase">
+                            {{ school.created_on|date:"M d, Y" }}
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                <a href="{% url 'super_admin_impersonate' school.pk %}" class="h-10 w-10 flex items-center justify-center bg-amber-500/10 text-amber-500 rounded-xl hover:bg-amber-500/20 transition-all shadow-sm" title="Deep Login">
                                     <i class="fa fa-user-secret"></i>
                                 </a>
-                                <a href="{% url 'super_admin_edit' school.pk %}" class="edit" title="Edit School">
-                                    <i class="fa fa-edit"></i>
+                                <a href="{% url 'super_admin_edit' school.pk %}" class="h-10 w-10 flex items-center justify-center bg-indigo-500/10 text-indigo-500 rounded-xl hover:bg-indigo-500/20 transition-all shadow-sm" title="Mod Registry">
+                                    <i class="fa fa-sliders"></i>
                                 </a>
-                            </td>
-
-                        </tr>
-
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No schools registered yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-8 py-32 text-center">
+                            <div class="flex flex-col items-center gap-6 opacity-30">
+                                <i class="fa fa-chart-line text-5xl"></i>
+                                <p class="text-xs font-black uppercase tracking-[0.5em]">No activity detected</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </main>
-
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}

@@ -61,9 +61,10 @@ class PlatformResource(models.Model):
 class PlatformAuditLog(models.Model):
     """Audit logs for platform-wide actions in the public schema"""
     from myapps.accounts.models import AUDIT_ACTION_CHOICES
+    ACTION_CHOICES = AUDIT_ACTION_CHOICES
 
     user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='platform_audit_logs')
-    action = models.CharField(max_length=20, choices=AUDIT_ACTION_CHOICES)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     target_model = models.CharField(max_length=100)
     target_id = models.CharField(max_length=100, blank=True, null=True)
     details = models.TextField(blank=True, help_text="Context of the platform-wide action")

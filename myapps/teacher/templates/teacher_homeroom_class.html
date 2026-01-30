@@ -15,12 +15,17 @@
 
     <main class="main-content">
         <div class="header-bar">
-            <div>
-                <a href="{% url 'teacher_dashboard' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
-                    <i class="fa fa-arrow-left"></i> Back to Dashboard
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+                <div>
+                    <a href="{% url 'teacher_dashboard' %}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                        <i class="fa fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <h1><i class="fa fa-star" style="color: #f39c12;"></i> My Homeroom Class</h1>
+                    <p class="date">{{ homeroom_class.name }} ({{ homeroom_class.level.name }}) | {{ student_data|length }} Students</p>
+                </div>
+                <a href="{% url 'admin_mark_attendance' %}?classroom={{ homeroom_class.id }}" class="btn-submit" style="height: 45px; background: #10b981; border: none; display: flex; align-items: center; gap: 8px; text-decoration: none; padding: 0 20px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                    <i class="fa fa-calendar-check"></i> Mark Daily Attendance
                 </a>
-                <h1><i class="fa fa-star" style="color: #f39c12;"></i> My Homeroom Class</h1>
-                <p class="date">{{ homeroom_class.name }} ({{ homeroom_class.level.name }}) | {{ student_data|length }} Students</p>
             </div>
         </div>
 

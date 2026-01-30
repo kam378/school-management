@@ -11,7 +11,11 @@
 </head>
 <body>
 
-    {% include "teacher_aside.html" %}
+    {% if request.user.role == 'school_admin' %}
+        {% include "admin_aside.html" %}
+    {% else %}
+        {% include "teacher_aside.html" %}
+    {% endif %}
 
     <main class="main-content">
         <div class="header-bar">

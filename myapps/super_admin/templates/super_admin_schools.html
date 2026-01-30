@@ -1,157 +1,178 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Schools - System Admin</title>
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="shortcut icon" href="{% static 'shield.svg' %}" type="image/svg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+{% extends 'super_admin_base.html' %}
 
-    {% include "super_admin_aside.html" %}
-
-    <main class="main-content">
-        <div class="header-bar">
-            <div style="display: flex; align-items: center;">
-                <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <h1 style="font-size: 1.5rem; margin: 0;">All Registered Schools</h1>
-            </div>
-            <a href="{% url 'super_admin_create' %}" class="btn-add">
-                <i class="fa fa-plus"></i> Add New School
-            </a>
+{% block content %}
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-black {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} tracking-tight">Institutional Cluster</h1>
+            <p class="text-gray-500 font-medium mt-1">Manage and monitor school-level multi-tenant deployments</p>
         </div>
+        <a href="{% url 'super_admin_create' %}" class="btn-sa btn-sa-primary">
+            <i class="fa fa-plus-circle"></i> Provision New Site
+        </a>
+    </div>
 
-        <!-- Search Bar -->
-        <form method="GET" style="margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow-color); display: flex; gap: 15px; align-items: center;">
-            <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                <i class="fa fa-search" style="color: #888;"></i>
-                <input type="text" name="search" placeholder="Search by school name or schema..." 
-                       value="{{ search_query }}" 
-                       style="flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); outline: none;">
+    <!-- Inventory Filter -->
+    <div class="glass-card">
+        <form method="GET" style="display: flex; gap: 1rem; align-items: center;">
+            <div class="input-group" style="flex: 1;">
+                <input type="text" name="search" placeholder="Search by name, schema, or unique identifier..." 
+                       value="{{ search_query|default:'' }}">
             </div>
-            <button type="submit" style="background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                <i class="fa fa-search"></i> Search
+            <button type="submit" class="btn-sa btn-sa-primary">
+                Search Registry
             </button>
-            <a href="{% url 'super_admin_schools' %}" style="background: #95a5a6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                <i class="fa fa-rotate-right"></i> Reset
+            {% if search_query %}
+            <a href="{% url 'super_admin_schools' %}" class="btn-sa btn-sa-secondary">
+                <i class="fa fa-rotate"></i> Clear
             </a>
+            {% endif %}
         </form>
+    </div>
 
-        {% if search_query %}
-        <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 0.9rem;">
-            <i class="fa fa-filter"></i> Showing {{ schools.count }} school{{ schools.count|pluralize }} 
-            <span style="color: var(--primary-color); font-weight: 500;">(filtered by "{{ search_query }}")</span>
+    <!-- Population Overview Alert -->
+    {% if search_query %}
+    <div class="px-6 py-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex items-center justify-between">
+        <div class="text-[10px] font-black uppercase tracking-widest text-indigo-500">
+            <i class="fa fa-clipboard-check mr-2"></i> Registry Audit: {{ schools|length }} nodes matching "{{ search_query }}"
         </div>
-        {% endif %}
+    </div>
+    {% endif %}
 
-        {% if messages %}
-
-        <div class="messages-container" style="margin-bottom: 20px;">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" style="padding: 15px; border-radius: 8px; background: rgba(46, 204, 113, 0.1); color: #27ae60; margin-bottom: 10px; border-left: 4px solid #2ecc71;">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="premium-table-container">
-            <table class="premium-table">
+    <!-- Inventory Grid/Table -->
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <div class="overflow-x-auto">
+            <table class="table-sa">
                 <thead>
                     <tr>
-                        <th>School Name</th>
-                        <th>Schema</th>
-                        <th>Domains</th>
-                        <th>Population</th>
-                        <th>Admin User</th>
-                        <th>Quota Usage</th>
-                        <th>Actions</th>
-
+                        <th>Institution Detail</th>
+                        <th>Core Schema</th>
+                        <th>Population Context</th>
+                        <th>Primary Endpoint</th>
+                        <th>Resource Quota</th>
+                        <th style="text-align: right;">Site Ops</th>
                     </tr>
-
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100/10">
                     {% for school in schools %}
-                    <tr>
-                        <td data-label="School Name">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="stat-icon" style="width: 35px; height: 35px; font-size: 0.9rem; background: rgba(74, 144, 226, 0.1); color: var(--primary-color); border-radius: 8px;">
+                    <tr class="group">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="height: 2.75rem; width: 2.75rem; border-radius: 1rem; background: linear-gradient(135deg, var(--primary-color), #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);">
                                     <i class="fa fa-school"></i>
                                 </div>
-                                <span style="font-weight: 600;">{{ school.name }}</span>
+                                <div>
+                                    <div style="font-size: 0.875rem; font-weight: 800; color: {% if global_settings.is_dark_mode %}white{% else %}var(--text-color){% endif %};">{{ school.name }}</div>
+                                    <div style="font-size: 10px; color: var(--muted-text); font-family: monospace; text-transform: uppercase;">UID: {{ school.schema_name|truncatechars:12 }}</div>
+                                </div>
                             </div>
                         </td>
-                        <td data-label="Schema"><span class="status-badge status-schema">{{ school.schema_name }}</span></td>
-                        <td data-label="Primary Domain">
-                            {% for d in school.domains.all %}
-                                {% if d.is_primary %}
-                                <span class="badge" style="background: #e1f5fe; color: #01579b; border: 1px solid #b3e5fc;">{{ d.domain }}</span>
-                                {% endif %}
-                            {% endfor %}
+                        <td>
+                            <span style="padding: 0.25rem 0.625rem; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.05){% else %}#f1f5f9{% endif %}; color: var(--muted-text); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                {{ school.schema_name }}
+                            </span>
                         </td>
-                        <td data-label="Population">
-                            <div style="display: flex; gap: 10px; font-size: 0.85rem;">
-                                <span title="Students"><i class="fa fa-user-graduate" style="color: var(--primary-color);"></i> {{ school.student_count }}</span>
-                                <span title="Teachers"><i class="fa fa-chalkboard-user" style="color: #2ecc71;"></i> {{ school.teacher_count }}</span>
+                        <td>
+                            <div style="display: flex; gap: 1rem; font-family: monospace;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 10px; font-weight: 900; color: #3b82f6;">{{ school.student_count }}</div>
+                                    <div style="font-size: 8px; font-weight: 800; color: var(--muted-text); text-transform: uppercase;">Stud</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 10px; font-weight: 900; color: #10b981;">{{ school.teacher_count }}</div>
+                                    <div style="font-size: 8px; font-weight: 800; color: var(--muted-text); text-transform: uppercase;">Teach</div>
+                                </div>
                             </div>
                         </td>
-                        <td data-label="Admin User">
-                            {% if school.admin_exists %}
-                                <span class="badge" style="background: rgba(52, 152, 219, 0.1); color: #2980b9; font-family: monospace; font-size: 0.8rem;">
-                                    <i class="fa fa-user-shield"></i> {{ school.admin_username }}
-                                </span>
-                            {% else %}
-                                <span class="badge" style="background: rgba(231, 76, 60, 0.1); color: #c0392b;">
-                                    <i class="fa fa-exclamation-triangle"></i> No admin
-                                </span>
-                            {% endif %}
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa fa-globe" style="font-size: 0.75rem; color: #6366f1;"></i>
+                                {% for d in school.domains.all %}
+                                    {% if d.is_primary %}
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--muted-text);">{{ d.domain }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </td>
-                        <td data-label="Quota Usage">
+                        <td>
                             {% if school.subscription_plan %}
-                                <div style="width: 150px;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
-                                        <span style="color: var(--text-muted);">{{ school.subscription_plan.name }}</span>
-                                        <span style="color: var(--text-color); font-weight: 600;">{{ school.quota_stats.student_percent|floatformat:0 }}%</span>
+                                <div style="width: 8rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 8px; font-weight: 900; text-transform: uppercase; color: var(--muted-text); margin-bottom: 0.375rem;">
+                                        <span>{{ school.subscription_plan.name|truncatechars:10 }}</span>
+                                        <span>{{ school.quota_stats.student_percent|floatformat:0 }}%</span>
                                     </div>
-                                    <div style="height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden;">
-                                        <div style="height: 100%; width: {{ school.quota_stats.student_percent }}%; background: {% if school.quota_stats.student_percent > 90 %}#e74c3c{% elif school.quota_stats.student_percent > 70 %}#f39c12{% else %}#2ecc71{% endif %};"></div>
+                                    <div style="height: 0.375rem; width: 100%; background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.05){% else %}#f1f5f9{% endif %}; border-radius: 99px; overflow: hidden;">
+                                        <div style="height: 100%; border-radius: 99px; transition: width 1s ease; width: {{ school.quota_stats.student_percent }}%; background: {% if school.quota_stats.student_percent > 90 %}#ef4444{% elif school.quota_stats.student_percent > 70 %}#f59e0b{% else %}#10b981{% endif %};"></div>
                                     </div>
                                 </div>
                             {% else %}
-                                <span class="badge" style="background: rgba(149, 165, 166, 0.1); color: #7f8c8d;">No Plan</span>
+                                <span style="font-size: 9px; font-weight: 900; color: var(--border-color); text-transform: uppercase; font-style: italic;">Unlicensed</span>
                             {% endif %}
                         </td>
-
-                        <td data-label="Actions" class="actions">
-                            <div style="display: flex; gap: 15px;">
-                                <a href="{% url 'super_admin_impersonate' school.pk %}" class="impersonate" title="Login as Admin" style="color: #f39c12;">
+                        <td style="text-align: right;">
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; transition: all 0.2s ease;">
+                                <a href="{% url 'super_admin_impersonate' school.pk %}" class="action-btn-sa action-btn-sa-impersonate" title="Deep Login">
                                     <i class="fa fa-user-secret"></i>
                                 </a>
-                                <a href="{% url 'super_admin_edit' school.pk %}" class="edit" title="Edit">
+                                <a href="{% url 'super_admin_edit' school.pk %}" class="action-btn-sa action-btn-sa-edit" title="Modify Node">
                                     <i class="fa fa-pen-to-square"></i>
                                 </a>
-                                <a href="{% url 'super_admin_delete' school.pk %}" onclick="return confirm('WARNING: This will permanently delete this school and all its data. Are you sure?')" class="delete" title="Delete">
+                                <button onclick="confirmDeletion('{{ school.pk }}', '{{ school.name|escapejs }}')" class="action-btn-sa action-btn-sa-delete" title="Purge Node">
                                     <i class="fa fa-trash-can"></i>
-                                </a>
+                                </button>
                             </div>
                         </td>
-
                     </tr>
-
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No schools registered yet.</td>
+                        <td colspan="6" style="padding: 8rem 0; text-align: center;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem; opacity: 0.3;">
+                                <i class="fa fa-database-slash" style="font-size: 3rem;"></i>
+                                <p style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5em;">No active nodes found</p>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </main>
+    </div>
+</div>
 
-</body>
-</html>
+<!-- Deletion Modal -->
+<div id="deleteModal" class="modal-sa">
+    <div class="modal-content-sa" id="modalFrame">
+        <div style="height: 6rem; width: 6rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 2rem; margin-left: auto; margin-right: auto; box-shadow: 0 0 0 10px rgba(239, 68, 68, 0.05);">
+            <i class="fa fa-triangle-exclamation"></i>
+        </div>
+        <h2 style="font-size: 1.875rem; font-weight: 900; color: #ef4444; margin-bottom: 1rem;">Cluster Purge</h2>
+        <p style="font-size: 0.875rem; font-weight: 700; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.6; margin-bottom: 2.5rem;">
+            Irreversible termination of <span id="school-name-display" style="color: var(--primary-color);"></span>. All encrypted schemas and user records will be destroyed.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <a id="confirm-delete-btn" href="#" class="btn-sa btn-sa-primary" style="background: #ef4444; box-shadow: 0 15px 30px -5px rgba(239, 68, 68, 0.3);">
+                Execute Purge
+            </a>
+            <button onclick="closeDeletion()" class="btn-sa btn-sa-secondary">
+                Abort Protocol
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDeletion(pk, name) {
+    document.getElementById('school-name-display').innerText = name;
+    document.getElementById('confirm-delete-btn').href = `/super-admin/schools/delete/${pk}/`;
+    const modal = document.getElementById('deleteModal');
+    modal.classList.add('active');
+}
+function closeDeletion() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+}
+</script>
+{% endblock %}

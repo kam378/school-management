@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ global_settings.platform_name|default:"EduManage" }} - Super Admin</title>
+    
+    <!-- Core Assets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-color: {{ global_settings.primary_color|default:"#4a90e2" }};
+            --sidebar-width: 280px;
+            --glass-bg: {% if global_settings.is_dark_mode %}rgba(13, 17, 23, 0.98){% else %}rgba(255, 255, 255, 0.98){% endif %};
+            --main-bg: {% if global_settings.is_dark_mode %}#0b0e14{% else %}#fcfdfe{% endif %};
+            --text-color: {% if global_settings.is_dark_mode %}#e2e8f0{% else %}#111827{% endif %};
+            --border-color: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.08){% else %}rgba(0,0,0,0.06){% endif %};
+            --card-bg: {% if global_settings.is_dark_mode %}#151921{% else %}#ffffff{% endif %};
+            --muted-text: {% if global_settings.is_dark_mode %}#94a3b8{% else %}#64748b{% endif %};
+            --radius-xl: 1rem;
+            --radius-2xl: 2rem;
+            --space-nav: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            color: var(--text-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--glass-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        .sidebar::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+            background: var(--main-bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-nav);
+            margin-top: 1.5rem;
+        }
+
+        .nav-link-sa {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-xl);
+            text-decoration: none;
+            color: var(--muted-text);
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link-sa i {
+            font-size: 1.125rem;
+            width: 24px;
+            display: flex;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link-sa:hover {
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.04){% else %}rgba(0,0,0,0.02){% endif %};
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .nav-link-sa.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
+        }
+
+        .nav-link-sa.active i {
+            transform: scale(1.1);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-2xl);
+            padding: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .page-header {
+            height: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: linear-gradient(to bottom, var(--main-bg) 60%, transparent);
+            backdrop-filter: blur(8px);
+        }
+
+        main {
+            padding: 0 2.5rem 3rem 2.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Form Design System */
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]), 
+        select, 
+        textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-xl);
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.03){% else %}#f8fafc{% endif %};
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s ease;
+            appearance: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.05){% else %}#ffffff{% endif %};
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px {% if global_settings.is_dark_mode %}rgba(74, 144, 226, 0.1){% else %}rgba(74, 144, 226, 0.05){% endif %};
+        }
+
+        label {
+            display: block;
+            font-size: 0.625rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted-text);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn-sa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 2.25rem;
+            border-radius: 1.25rem;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-sa-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(74, 144, 226, 0.25);
+        }
+
+        .btn-sa-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 15px 30px -5px rgba(74, 144, 226, 0.35);
+        }
+
+        .btn-sa-secondary {
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.05){% else %}#f1f5f9{% endif %};
+            color: var(--muted-text);
+        }
+
+        .btn-sa-secondary:hover {
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.1){% else %}#e2e8f0{% endif %};
+            color: var(--text-color);
+        }
+
+        /* Alerts */
+        .alert-sa {
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            border: 1px solid transparent;
+        }
+
+        .alert-sa-warning {
+            background: rgba(245, 158, 11, 0.05);
+            border-color: rgba(245, 158, 11, 0.1);
+        }
+
+        .alert-sa-warning i {
+            color: #f59e0b;
+            font-size: 1.25rem;
+            margin-top: 0.25rem;
+        }
+
+        .alert-sa-warning h4 {
+            color: #f59e0b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-sa-warning p {
+            color: var(--muted-text);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        /* Tables */
+        .table-sa {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table-sa thead tr {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-sa th {
+            padding: 1.5rem 2rem;
+            font-size: 0.625rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--muted-text);
+        }
+
+        .table-sa td {
+            padding: 1.5rem 2rem;
+            vertical-align: middle;
+        }
+
+        .table-sa tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-sa tbody tr:hover {
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.02){% else %}rgba(0,0,0,0.01){% endif %};
+        }
+
+        /* Action Buttons */
+        .action-btn-sa {
+            height: 2.5rem;
+            width: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .action-btn-sa-edit {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+        }
+        .action-btn-sa-edit:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .action-btn-sa-delete {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+        }
+        .action-btn-sa-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .action-btn-sa-impersonate {
+            background: rgba(245, 158, 11, 0.08);
+            color: #f59e0b;
+        }
+        .action-btn-sa-impersonate:hover {
+            background: #f59e0b;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Modals */
+        .modal-sa {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-sa.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content-sa {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-sa.active .modal-content-sa {
+            transform: scale(1);
+        }
+
+        /* Checkbox Switch */
+        input[type="checkbox"] {
+            height: 1.5rem;
+            width: 2.75rem;
+            background: {% if global_settings.is_dark_mode %}rgba(255,255,255,0.1){% else %}#e2e8f0{% endif %};
+            border-radius: 99px;
+            appearance: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--primary-color);
+        }
+
+        input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            height: calc(1.5rem - 4px);
+            width: calc(1.5rem - 4px);
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input[type="checkbox"]:checked::after {
+            transform: translateX(1.25rem);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="sidebar h-screen fixed left-0 top-0 z-50 overflow-y-auto">
+            {% include 'super_admin_aside.html' %}
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content flex-1 flex flex-col">
+            <!-- Top Navbar -->
+            <header class="h-20 flex items-center justify-between px-10 sticky top-0 z-40 page-header">
+                <div>
+                    <h2 class="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400">Platform Control Engine</h2>
+                </div>
+                
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-4 group cursor-pointer border-l border-gray-100/10 pl-8">
+                        <div class="text-right transition-all group-hover:mr-1">
+                            <div class="text-sm font-bold {% if global_settings.is_dark_mode %}text-white{% else %}text-gray-900{% endif %} hover:text-blue-500">{{ request.user.username }}</div>
+                            <div class="text-[10px] uppercase font-black text-blue-500/80 tracking-widest">Master Root</div>
+                        </div>
+                        <div class="relative">
+                            <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-xl shadow-blue-500/20 flex items-center justify-center text-white font-black transition-transform group-hover:scale-105 group-hover:rotate-3">
+                                {{ request.user.username|first|upper }}
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-white rounded-full {% if global_settings.is_dark_mode %}border-[#111]{% endif %}"></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 px-10 pb-12">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
