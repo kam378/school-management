@@ -205,17 +205,11 @@ class CalendarEvent(models.Model):
 
 
 class AuditLog(models.Model):
-    ACTION_CHOICES = [
-        ('CREATE', 'Created'),
-        ('UPDATE', 'Updated'),
-        ('DELETE', 'Deleted'),
-        ('PROMOTION', 'Student Promotion'),
-        ('SETTINGS', 'Settings Changed'),
-        ('SECURITY', 'Security Event'),
-    ]
+    """Audit logs for actions performed within a specific school (tenant)"""
+    from myapps.accounts.models import AUDIT_ACTION_CHOICES
 
     user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='audit_logs')
-    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    action = models.CharField(max_length=20, choices=AUDIT_ACTION_CHOICES)
     target_model = models.CharField(max_length=100)
     target_id = models.CharField(max_length=100, blank=True, null=True)
     details = models.TextField(blank=True, help_text="JSON or text representation of changes")
@@ -223,6 +217,8 @@ class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = "Audit Log"
+        verbose_name_plural = "Audit Logs"
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['timestamp']),

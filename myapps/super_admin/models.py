@@ -56,3 +56,28 @@ class PlatformResource(models.Model):
 
     def __str__(self):
         return f"[GLOBAL] {self.title}"
+
+
+class PlatformAuditLog(models.Model):
+    """Audit logs for platform-wide actions in the public schema"""
+    from myapps.accounts.models import AUDIT_ACTION_CHOICES
+
+    user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='platform_audit_logs')
+    action = models.CharField(max_length=20, choices=AUDIT_ACTION_CHOICES)
+    target_model = models.CharField(max_length=100)
+    target_id = models.CharField(max_length=100, blank=True, null=True)
+    details = models.TextField(blank=True, help_text="Context of the platform-wide action")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Platform Audit Log"
+        verbose_name_plural = "Platform Audit Logs"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['action']),
+        ]
+
+    def __str__(self):
+        return f"{self.action} on {self.target_model} (PLATFORM) at {self.timestamp}"

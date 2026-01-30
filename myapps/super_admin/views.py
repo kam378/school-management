@@ -291,3 +291,39 @@ def toggle_theme(request):
     settings.save()
     messages.success(request, f"Theme switched to {'Dark' if settings.is_dark_mode else 'Light'} mode.")
     return redirect(request.META.get('HTTP_REFERER', 'super_admin_dashboard'))
+
+from .models import PlatformAuditLog
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+@user_passes_test(super_admin_check)
+def platform_audit_logs(request):
+    logs_list = PlatformAuditLog.objects.all().order_by('-timestamp')
+    
+    # Filtering
+    action_filter = request.GET.get('action')
+    if action_filter:
+        logs_list = logs_list.filter(action=action_filter)
+
+    search_query = request.GET.get('search')
+    if search_query:
+        logs_list = logs_list.filter(
+            Q(user__username__icontains=search_query) |
+            Q(details__icontains=search_query) |
+            Q(target_model__icontains=search_query) |
+            Q(target_id__icontains=search_query)
+        )
+
+    paginator = Paginator(logs_list, 50) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    from myapps.accounts.models import AUDIT_ACTION_CHOICES
+    context = {
+        'page_obj': page_obj,
+        'action_choices': AUDIT_ACTION_CHOICES,
+        'current_action': action_filter,
+        'search_query': search_query,
+    }
+
+    return render(request, 'super_admin_audit_logs.html', context)

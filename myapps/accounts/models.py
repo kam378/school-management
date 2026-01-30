@@ -3,6 +3,16 @@ from django.contrib.auth.models import AbstractUser
 from datetime import datetime
 # from myapps.school_admin.models import GradeLevel, Classroom
 
+AUDIT_ACTION_CHOICES = [
+    ('CREATE', 'Created'),
+    ('UPDATE', 'Updated'),
+    ('DELETE', 'Deleted'),
+    ('PROMOTION', 'Student Promotion'),
+    ('SETTINGS', 'Settings Changed'),
+    ('SECURITY', 'Security Event'),
+    ('THROTTLE', 'IP Throttled'),
+]
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('school_admin', 'School Admin'),

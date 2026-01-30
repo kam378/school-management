@@ -17,6 +17,7 @@ urlpatterns = [
     path('theme/toggle/', views.toggle_theme, name='toggle_theme'),
     path('resources/', views.manage_platform_resources, name='manage_platform_resources'),
     path('resources/delete/<int:pk>/', views.delete_platform_resource, name='delete_platform_resource'),
+    path('audit-logs/', views.platform_audit_logs, name='platform_audit_logs'),
 ]
 
 

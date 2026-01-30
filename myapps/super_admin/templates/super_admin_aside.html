@@ -81,6 +81,11 @@
             </a>
         </li>
         <li>
+            <a href="{% url 'platform_audit_logs' %}" class="{% if 'audit-logs' in request.path %}active{% endif %}">
+                <i class="fa fa-clipboard-list"></i> Security Logs
+            </a>
+        </li>
+        <li>
             <a href="{% url 'toggle_theme' %}">
                 <i class="fa {% if global_settings.is_dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i> 
                 Toggle {% if global_settings.is_dark_mode %}Light{% else %}Dark{% endif %} Mode
